@@ -94,7 +94,7 @@ Rules and per-horizon parameters: [docs/STRATEGY.md](docs/STRATEGY.md).
 
 No Rust, Cargo, Python or build tools required.
 
-[![Download for Windows](https://img.shields.io/badge/download-Windows%2010%2F11-blue?style=for-the-badge)](https://github.com/kingabzpro/tpi-rs/releases/latest)
+[![Download for Windows](https://img.shields.io/badge/download-Windows%2010%2F11-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest)
 
 The release includes the Windows zip and a matching `.sha256` file. The zip contains `tpi.exe`, `config/default.toml`, `.env.example`, and `README.md`. Extract it and try the offline demo:
 
