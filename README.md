@@ -10,6 +10,22 @@
 
 TPI-RS scans US stocks, scores Donchian breakouts with trend, momentum and volatility filters, adds a 26-vote technical rating, backtests the result, and can trade it through Alpaca. It ships as a single native binary and a terminal dashboard. No Python, no Docker, no WSL, no GPU, no AI model.
 
+## The short version
+
+| What matters | Measured |
+|---|---:|
+| Scan math for 100 symbols | **0.05 ms** |
+| Indicators for 100 symbols x 1,105 bars | **15.9 ms** |
+| Backtest, 50 symbols x 783 sessions | **32.9 ms** (1.19M symbol-days/s) |
+| Cold real Top-100 scan over Alpaca IEX | **about 3.3 s**, network-bound |
+| Idle process memory | **7 MB** |
+| Memory with 100 symbols loaded | **98 MB** |
+| Windows release binary | **5.9 MB** |
+| Verification | **56 tests**, no-lookahead checks, mock exchange, exact next-open fills |
+| Determinism | six concurrent scans produce byte-identical results |
+
+These are engineering wins, not a promise of returns. "Accuracy" here means the math is causal, fills and fees are tested, and repeated runs agree. It does not mean the strategy predicts prices well. The benchmark below shows it losing to SPY over the sample period.
+
 > [!WARNING]
 > This is research software, not investment advice. Markets can and will lose money. The live trading path is disabled by default and requires several deliberate confirmations. Paper trade first. The strategy underperformed SPY in the published three-year test; the report shows that plainly.
 
