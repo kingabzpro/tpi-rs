@@ -4,7 +4,7 @@
 
 **Super fast algorithmic trading for US stocks, built entirely in Rust.**
 
-[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/kingabzpro/tpi-rs?display_name=tag&sort=semver)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)
+[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)
 
 </div>
 
