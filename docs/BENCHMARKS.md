@@ -11,7 +11,7 @@ All numbers below were produced on the machine described in section 1 with the r
 | OS | Windows 11 Home, build 10.0.26300 |
 | Rust | 1.99.1, stable-x86_64-pc-windows-msvc |
 | Build | `cargo build --release` (opt-level 3, fat LTO, one codegen unit, panic=abort, stripped) |
-| Binary | 5.9 MB |
+| Binary | about 6 MB |
 
 ## 2. Performance harness
 
@@ -38,7 +38,7 @@ Workload: 100 synthetic symbols x 1,105 daily bars; 50 symbols x 783 sessions fo
 | Working set after loading 100 symbols | 98.2 MB |
 | Peak working set | 98.2 MB |
 | CPU time / wall time | 0.20 s / 0.14 s = 143% |
-| Release binary | 5.9 MB |
+| Release binary | about 6 MB |
 
 Across repeated runs, the parallel indicator phase was 14.4-16.7 ms, the single-thread phase was 23.2-27.4 ms, the backtest was 29.1-33.5 ms and CPU utilization ranged from 143% to 213%. Small Rayon workloads are dominated by scheduling and allocation, which is why parallel speedup over the single-thread run is modest.
 

@@ -20,7 +20,7 @@ TPI-RS scans US stocks, scores Donchian breakouts with trend, momentum and volat
 | Cold real Top-100 scan over Alpaca IEX | **about 3.3 s**, network-bound |
 | Idle process memory | **7 MB** |
 | Memory with 100 symbols loaded | **98 MB** |
-| Windows release binary | **5.9 MB** |
+| Windows release binary | **about 6 MB** |
 | Verification | **63 tests**, no-lookahead checks, mock exchange, exact next-open fills |
 | Determinism | six concurrent scans produce byte-identical results |
 
@@ -151,7 +151,7 @@ Measured on an Intel i7-12650H (10 cores, 16 threads), 16 GB RAM, Windows 11, re
 | Scan evaluation, 100 symbols | 0.05 ms mean |
 | Backtest, 50 symbols x 783 sessions | 32.9 ms, about 1.19M symbol-days/s |
 | Working set, 100 symbols loaded | 98 MB |
-| Release binary | 5.9 MB |
+| Release binary | about 6 MB |
 
 These are synthetic-data measurements, not trading results. `tpi --perf` reproduces them on your machine.
 
