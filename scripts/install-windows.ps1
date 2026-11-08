@@ -18,11 +18,11 @@ if ($Version -eq "latest") {
 }
 
 $tagName = $release.tag_name
-$asset = $release.assets | Where-Object { $_.name -like "*x86_64-pc-windows-msvc.zip" } | Select-Object -First 1
+$asset = $release.assets | Where-Object { $_.name -like "*-windows-x64.zip" } | Select-Object -First 1
 $checksumAsset = $release.assets | Where-Object { $_.name -eq "$($asset.name).sha256" } | Select-Object -First 1
 
 if (-not $asset) {
-    throw "No Windows x86_64 asset found on release $tagName."
+    throw "No Windows x64 asset found on release $tagName."
 }
 
 $installDir = Join-Path $InstallRoot $tagName

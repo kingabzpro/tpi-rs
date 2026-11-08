@@ -53,7 +53,7 @@ jobs:
           Copy-Item "target/release/tpi.exe" $stage
           Copy-Item README.md, LICENSE, .env.example $stage
           Copy-Item config $stage -Recurse
-          $asset = "dist/tpi-$tag-x86_64-pc-windows-msvc.zip"
+          $asset = "dist/tpi-$tag-windows-x64.zip"
           Compress-Archive -Path "$stage/*" -DestinationPath $asset
           $hash = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLower()
           [IO.File]::WriteAllText("$asset.sha256", "$hash  $(Split-Path $asset -Leaf)`n")
@@ -70,7 +70,7 @@ jobs:
           cp target/release/tpi "$stage/"
           cp README.md LICENSE .env.example "$stage/"
           cp -r config "$stage/"
-          asset="dist/tpi-$tag-x86_64-unknown-linux-gnu.tar.gz"
+          asset="dist/tpi-$tag-linux-x64-gnu.tar.gz"
           tar -czf "$asset" -C "$stage" .
           base=$(basename "$asset")
           ( cd dist && sha256sum "$base" > "$base.sha256" )
@@ -107,12 +107,12 @@ jobs:
             Prebuilt TPI-RS binaries for `${{ env.RELEASE_TAG }}`.
 
             **Windows 10/11 x64**
-            1. Download `tpi-${{ env.RELEASE_TAG }}-x86_64-pc-windows-msvc.zip`.
+            1. Download `tpi-${{ env.RELEASE_TAG }}-windows-x64.zip`.
             2. Extract it.
             3. Open PowerShell in the extracted folder and run `.\tpi.exe doctor`, then `.\tpi.exe`.
 
-            **Linux x64**
-            1. Download `tpi-${{ env.RELEASE_TAG }}-x86_64-unknown-linux-gnu.tar.gz`.
+            **Linux x64 (glibc)**
+            1. Download `tpi-${{ env.RELEASE_TAG }}-linux-x64-gnu.tar.gz`.
             2. Extract it, then run `./tpi doctor` and `./tpi`.
             3. The Linux build uses the system OpenSSL (`libssl3` on most distributions).
 
