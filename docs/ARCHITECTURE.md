@@ -5,7 +5,7 @@ TPI-RS is a single Rust crate with a library (`tpi_rs`) and one binary (`tpi-rs`
 ## 1. System diagram
 
 ```mermaid
-flowchart TD
+flowchart LR
     UI[CLI / interactive prompts / Ratatui] --> CFG[Config + selection + doctor]
     CFG --> MD[MarketData facade]
     MD --> API[Alpaca REST client<br/>rate limiter, retries, pagination]

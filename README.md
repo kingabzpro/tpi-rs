@@ -85,7 +85,7 @@ The script is short and readable. Review it before running it.
 ## How a signal is made
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[Daily adjusted bars] --> B{Close and EMA50 above EMA200?}
     B -- No --> H[HOLD or stay flat]
     B -- Yes --> C{Donchian breakout?<br/>20-day short/medium, 40-day long}
