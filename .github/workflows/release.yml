@@ -56,7 +56,7 @@ jobs:
           $asset = "dist/tpi-$tag-x86_64-pc-windows-msvc.zip"
           Compress-Archive -Path "$stage/*" -DestinationPath $asset
           $hash = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLower()
-          "$hash  $(Split-Path $asset -Leaf)" | Out-File "$asset.sha256" -Encoding ascii
+          [IO.File]::WriteAllText("$asset.sha256", "$hash  $(Split-Path $asset -Leaf)`n")
           Get-ChildItem dist | Format-Table Name, Length
 
       - name: Package Linux tarball
@@ -112,12 +112,12 @@ jobs:
 
             **Linux x64**
             1. Download `tpi-${{ env.RELEASE_TAG }}-x86_64-unknown-linux-gnu.tar.gz`.
-            2. Extract it, then run `./tpi --doctor` and `./tpi`.
+            2. Extract it, then run `./tpi doctor` and `./tpi`.
             3. The Linux build uses the system OpenSSL (`libssl3` on most distributions).
 
             No Rust toolchain is needed. The archives include `config/default.toml`, `.env.example`, the README and the license.
 
-            For a no-network demo, run `tpi --offline --tickers AAPL,MSFT --mode scan`.
+            For a no-network demo, run `tpi run AAPL,MSFT --offline`.
 
             Verify the download with the matching `.sha256` file before running it.
 
