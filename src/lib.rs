@@ -28,5 +28,5 @@ pub mod tui;
 
 pub use error::{Error, Result};
 
-/// Crate version, also exposed by `tpi-rs --version`.
+/// Crate version, also exposed by `tpi --version`.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

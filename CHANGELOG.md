@@ -2,6 +2,17 @@
 
 All notable changes to TPI-RS are recorded here. The project follows semantic versioning.
 
+## [0.1.1] - 2026-11-08
+
+### Changed
+
+- Renamed the executable from `tpi-rs` to `tpi`.
+- Added natural commands: `tpi`, `tpi run`, `tpi analyze`, `tpi scan`, `tpi backtest`, `tpi benchmark`, `tpi paper`, `tpi live`, `tpi tui`, `tpi doctor`, `tpi perf`.
+- Positional tickers work after a command, for example `tpi run AAPL,MSFT`.
+- All previous flat flags still work, including `tpi --mode backtest`.
+- Updated README, setup guide, benchmark commands, installer and release asset names for the new binary.
+- Added six command-expansion tests and one end-to-end CLI command test. The suite now has 63 tests.
+
 ## [0.1.0] - 2026-11-08
 
 First public release.

@@ -20,14 +20,14 @@ The suite does not need Alpaca credentials or a network connection. All exchange
 
 | Suite | Tests | Focus |
 |---|---:|---|
-| Library unit tests | 34 | Config validation, cache roundtrip, Alpaca parsing, ticker validation, synthetic determinism, indicator causality, rating mechanics, TPI gates, sizing, scan determinism, engine accounting, benchmark |
+| Library unit tests | 40 | Config validation, cache roundtrip, Alpaca parsing, ticker validation, synthetic determinism, indicator causality, rating mechanics, TPI gates, sizing, scan determinism, engine accounting, benchmark |
 | `properties.rs` | 4 | Invariants over random series: bounded RSI, ATR, scores; rating fast/detailed agreement; stop below entry; risk/notional caps; future bars cannot change past signals |
 | `execution.rs` | 3 | Next-open fills with costs, prior-session BUY requirement, fee arithmetic, final liquidation, full vs truncated no-lookahead, non-negative equity across horizons and risk profiles |
 | `mock_exchange.rs` | 4 | Pagination, sorting, auth headers, account/positions parsing, order submission and client-id lookup, transient 500 retry, emergency flatten |
 | `concurrency_safety.rs` | 5 | Six concurrent scans produce identical output; live config/ack/TTY/ceiling gates |
-| `exports_cli.rs` | 6 | Scan CSV/JSON, backtest artifacts, benchmark per-leg artifacts, CLI offline JSON, doctor, missing ticker error |
+| `exports_cli.rs` | 7 | Scan CSV/JSON, backtest artifacts, benchmark per-leg artifacts, CLI offline JSON, doctor, missing ticker error |
 
-Total: **56 tests**.
+Total: **63 tests**.
 
 ## 3. Property tests
 
@@ -92,7 +92,7 @@ The cache itself is protected by a `Mutex`; the test runs with caching disabled 
 
 ## 8. Manual verification performed
 
-- `tpi-rs --doctor` against the real Alpaca paper account: clock, account, and SPY history passed.
+- `tpi doctor` against the real Alpaca paper account: clock, account, and SPY history passed.
 - A real Top-100 scan completed in about 3.3 seconds with 100 symbols and correctly excluded newly listed symbols with insufficient warmup.
 - A full real-data benchmark with walk-forward, stability and OOS completed and exported all artifacts.
 - Paper mode `--once --dry-run` read the live paper account, positions and open orders, rendered the signals, and submitted nothing.
@@ -107,7 +107,7 @@ The cache itself is protected by a `Mutex`; the test runs with caching disabled 
 3. `cargo clippy --all-targets -- -D warnings`
 4. `cargo test`
 5. `cargo build --release`
-6. `tpi-rs --perf` smoke run
+6. `tpi perf` smoke run
 
 No secrets are required. Live API tests are deliberately excluded from CI.
 

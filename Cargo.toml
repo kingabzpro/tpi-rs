@@ -1,12 +1,12 @@
 [package]
 name = "tpi-rs"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.88"
 description = "Lightweight, deterministic Rust trading system: TPI trend/breakout strategy, ratings, backtests and Alpaca execution"
 license = "MIT"
 publish = false
-default-run = "tpi-rs"
+default-run = "tpi"
 repository = "https://github.com/kingabzpro/tpi-rs"
 homepage = "https://github.com/kingabzpro/tpi-rs"
 readme = "README.md"
@@ -18,7 +18,7 @@ name = "tpi_rs"
 path = "src/lib.rs"
 
 [[bin]]
-name = "tpi-rs"
+name = "tpi"
 path = "src/main.rs"
 
 [dependencies]

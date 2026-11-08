@@ -50,10 +50,10 @@ jobs:
           $tag = $env:RELEASE_TAG
           $stage = "dist/stage"
           New-Item -ItemType Directory -Force -Path $stage | Out-Null
-          Copy-Item "target/release/tpi-rs.exe" $stage
+          Copy-Item "target/release/tpi.exe" $stage
           Copy-Item README.md, LICENSE, .env.example $stage
           Copy-Item config $stage -Recurse
-          $asset = "dist/tpi-rs-$tag-x86_64-pc-windows-msvc.zip"
+          $asset = "dist/tpi-$tag-x86_64-pc-windows-msvc.zip"
           Compress-Archive -Path "$stage/*" -DestinationPath $asset
           $hash = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLower()
           "$hash  $(Split-Path $asset -Leaf)" | Out-File "$asset.sha256" -Encoding ascii
@@ -67,10 +67,10 @@ jobs:
           tag="$RELEASE_TAG"
           stage="dist/stage"
           mkdir -p "$stage"
-          cp target/release/tpi-rs "$stage/"
+          cp target/release/tpi "$stage/"
           cp README.md LICENSE .env.example "$stage/"
           cp -r config "$stage/"
-          asset="dist/tpi-rs-$tag-x86_64-unknown-linux-gnu.tar.gz"
+          asset="dist/tpi-$tag-x86_64-unknown-linux-gnu.tar.gz"
           tar -czf "$asset" -C "$stage" .
           sha256sum "$asset" > "$asset.sha256"
           ls -lh dist
@@ -106,18 +106,18 @@ jobs:
             Prebuilt TPI-RS binaries for `${{ env.RELEASE_TAG }}`.
 
             **Windows 10/11 x64**
-            1. Download `tpi-rs-${{ env.RELEASE_TAG }}-x86_64-pc-windows-msvc.zip`.
+            1. Download `tpi-${{ env.RELEASE_TAG }}-x86_64-pc-windows-msvc.zip`.
             2. Extract it.
-            3. Open PowerShell in the extracted folder and run `.\tpi-rs.exe --doctor`, then `.\tpi-rs.exe`.
+            3. Open PowerShell in the extracted folder and run `.\tpi.exe --doctor`, then `.\tpi.exe`.
 
             **Linux x64**
-            1. Download `tpi-rs-${{ env.RELEASE_TAG }}-x86_64-unknown-linux-gnu.tar.gz`.
-            2. Extract it, then run `./tpi-rs --doctor` and `./tpi-rs`.
+            1. Download `tpi-${{ env.RELEASE_TAG }}-x86_64-unknown-linux-gnu.tar.gz`.
+            2. Extract it, then run `./tpi --doctor` and `./tpi`.
             3. The Linux build uses the system OpenSSL (`libssl3` on most distributions).
 
             No Rust toolchain is needed. The archives include `config/default.toml`, `.env.example`, the README and the license.
 
-            For a no-network demo, run `tpi-rs --offline --tickers AAPL,MSFT --mode scan`.
+            For a no-network demo, run `tpi --offline --tickers AAPL,MSFT --mode scan`.
 
             Verify the download with the matching `.sha256` file before running it.
 

@@ -1,6 +1,6 @@
 # Architecture
 
-TPI-RS is a single Rust crate with a library (`tpi_rs`) and one binary (`tpi-rs`). It separates data acquisition, causal analytics, strategy decisions, portfolio simulation, execution and presentation. No component reaches around another to mutate shared state.
+TPI-RS is a single Rust crate with a library (`tpi_rs`) and one binary (`tpi`). It separates data acquisition, causal analytics, strategy decisions, portfolio simulation, execution and presentation. No component reaches around another to mutate shared state.
 
 ## 1. System diagram
 

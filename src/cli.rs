@@ -18,12 +18,114 @@ pub enum OutputFormat {
     Json,
 }
 
+/// Turn `tpi run AAPL`, `tpi backtest`, and similar commands into the flat
+/// flag form the parser understands. Anything unrecognised is left untouched.
+pub fn expand_command_args(args: Vec<String>) -> Vec<String> {
+    if args.len() < 2 {
+        return args;
+    }
+    let command = args[1].to_ascii_lowercase();
+    let mut expanded = vec![args[0].clone()];
+    let mut rest_start = 2;
+    match command.as_str() {
+        "run" | "scan" => {
+            expanded.push("--mode".into());
+            expanded.push("scan".into());
+        }
+        "analyze" | "analyse" => {
+            expanded.push("--mode".into());
+            expanded.push("analyze".into());
+        }
+        "backtest" | "bt" => {
+            expanded.push("--mode".into());
+            expanded.push("backtest".into());
+        }
+        "benchmark" | "bench" => {
+            expanded.push("--mode".into());
+            expanded.push("benchmark".into());
+        }
+        "paper" => {
+            expanded.push("--mode".into());
+            expanded.push("paper".into());
+        }
+        "live" => {
+            expanded.push("--mode".into());
+            expanded.push("live".into());
+        }
+        "tui" | "dashboard" => {
+            expanded.push("--tui".into());
+            let has_target = args[2..].iter().any(|value| {
+                !value.starts_with('-')
+                    || value == "--tickers"
+                    || value.starts_with("--tickers=")
+                    || value == "--top"
+                    || value.starts_with("--top=")
+                    || value == "--mode"
+                    || value.starts_with("--mode=")
+            });
+            if !has_target {
+                expanded.push("--mode".into());
+                expanded.push("scan".into());
+                expanded.push("--top".into());
+                expanded.push("100".into());
+            }
+        }
+        "doctor" => expanded.push("--doctor".into()),
+        "perf" => expanded.push("--perf".into()),
+        "help" => {
+            expanded.push("--help".into());
+            rest_start = args.len();
+        }
+        "version" => {
+            expanded.push("--version".into());
+            rest_start = args.len();
+        }
+        _ => return args,
+    }
+
+    // Leading non-flag tokens after the command are tickers or a universe.
+    let mut positionals = Vec::new();
+    let mut i = rest_start;
+    while i < args.len() && !args[i].starts_with('-') {
+        positionals.push(args[i].clone());
+        i += 1;
+    }
+    if !positionals.is_empty() {
+        expanded.push("--tickers".into());
+        expanded.push(positionals.join(","));
+    }
+    expanded.extend(args[i..].iter().cloned());
+    expanded
+}
+
 #[derive(Parser, Debug)]
 #[command(
-    name = "tpi-rs",
+    name = "tpi",
     version,
-    about = "TPI-RS: lightweight deterministic Rust trading system (Donchian 40/20, EMA 50/200, RSI/ATR, Alpaca)",
-    after_help = "Examples:\n  tpi-rs\n  tpi-rs --tickers AAPL,MSFT --mode scan --horizon short\n  tpi-rs --top 100 --mode scan --strategy consensus\n  tpi-rs --mode backtest --start 2023-11-01 --end 2026-11-01\n  tpi-rs --mode benchmark\n  tpi-rs --mode paper --once --dry-run\n  tpi-rs --doctor\n\nSignals are rule-based conditions, not price forecasts. No AI/ML is used."
+    about = "A fast, deterministic Rust trading system for US stocks",
+    after_help = "Commands:
+  tpi                     interactive prompts
+  tpi run [TICKERS]       scan tickers, or the Top 100 if none are given
+  tpi analyze TICKERS     detailed analysis with explanations
+  tpi scan [TICKERS]      ranked signal table
+  tpi backtest [TICKERS]  next-open backtest
+  tpi benchmark           three-year benchmark with validation
+  tpi paper               paper trading
+  tpi live                live trading, gated
+  tpi tui [TICKERS]       terminal dashboard
+  tpi doctor              setup and connectivity checks
+  tpi perf                performance harness
+
+Examples:
+  tpi
+  tpi run AAPL,MSFT --horizon short
+  tpi scan --top 100 --strategy consensus
+  tpi backtest --start 2023-11-01 --end 2026-11-01
+  tpi benchmark --strategy compare
+  tpi paper --once --dry-run
+
+The flat flags still work: tpi --mode backtest.
+Signals are rule-based conditions, not price forecasts."
 )]
 pub struct Cli {
     /// Ticker(s), comma separated. Use "top100" or "auto" for discovery.
@@ -406,7 +508,7 @@ pub fn resolve(cli: &Cli, cfg: &Config) -> Result<Selection> {
             match mode {
                 Mode::Analyze => {
                     return Err(Error::validation(
-                        "no tickers. Pass --tickers AAPL,MSFT, --top 100, or run tpi-rs interactively",
+                        "no tickers. Pass --tickers AAPL,MSFT, --top 100, or run tpi interactively",
                     ));
                 }
                 Mode::Scan | Mode::Paper | Mode::Live => {
@@ -465,4 +567,95 @@ pub fn init_logging(tui: bool) {
         .with_env_filter(filter)
         .with_target(false)
         .try_init();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::expand_command_args;
+
+    fn expand(args: &[&str]) -> Vec<String> {
+        expand_command_args(args.iter().map(|s| s.to_string()).collect())
+    }
+
+    #[test]
+    fn expands_run_with_positional_tickers() {
+        let out = expand(&["tpi", "run", "AAPL", "MSFT", "--horizon", "short"]);
+        assert_eq!(
+            out,
+            vec![
+                "tpi",
+                "--mode",
+                "scan",
+                "--tickers",
+                "AAPL,MSFT",
+                "--horizon",
+                "short"
+            ]
+        );
+    }
+
+    #[test]
+    fn expands_analyze_and_flags() {
+        let out = expand(&["tpi", "analyze", "AAPL", "--offline"]);
+        assert_eq!(
+            out,
+            vec!["tpi", "--mode", "analyze", "--tickers", "AAPL", "--offline"]
+        );
+    }
+
+    #[test]
+    fn expands_backtest_and_benchmark() {
+        assert_eq!(
+            expand(&["tpi", "backtest", "--start", "2024-01-01"]),
+            vec!["tpi", "--mode", "backtest", "--start", "2024-01-01"]
+        );
+        assert_eq!(
+            expand(&["tpi", "bench"]),
+            vec!["tpi", "--mode", "benchmark"]
+        );
+    }
+
+    #[test]
+    fn expands_tui_default_target() {
+        assert_eq!(
+            expand(&["tpi", "tui"]),
+            vec!["tpi", "--tui", "--mode", "scan", "--top", "100"]
+        );
+        assert_eq!(
+            expand(&["tpi", "tui", "--offline"]),
+            vec![
+                "tpi",
+                "--tui",
+                "--mode",
+                "scan",
+                "--top",
+                "100",
+                "--offline"
+            ]
+        );
+        assert_eq!(
+            expand(&["tpi", "tui", "AAPL"]),
+            vec!["tpi", "--tui", "--tickers", "AAPL"]
+        );
+    }
+
+    #[test]
+    fn expands_doctor_perf_and_help() {
+        assert_eq!(
+            expand(&["tpi", "doctor", "--offline"]),
+            vec!["tpi", "--doctor", "--offline"]
+        );
+        assert_eq!(expand(&["tpi", "perf"]), vec!["tpi", "--perf"]);
+        assert_eq!(expand(&["tpi", "help"]), vec!["tpi", "--help"]);
+    }
+
+    #[test]
+    fn leaves_flat_invocations_alone() {
+        let flat: Vec<String> = ["tpi", "--offline", "--mode", "scan"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        assert_eq!(expand_command_args(flat.clone()), flat);
+        assert_eq!(expand_command_args(vec!["tpi".into()]), vec!["tpi"]);
+    }
 }

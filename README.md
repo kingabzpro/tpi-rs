@@ -21,7 +21,7 @@ TPI-RS scans US stocks, scores Donchian breakouts with trend, momentum and volat
 | Idle process memory | **7 MB** |
 | Memory with 100 symbols loaded | **98 MB** |
 | Windows release binary | **5.9 MB** |
-| Verification | **56 tests**, no-lookahead checks, mock exchange, exact next-open fills |
+| Verification | **63 tests**, no-lookahead checks, mock exchange, exact next-open fills |
 | Determinism | six concurrent scans produce byte-identical results |
 
 These are engineering wins, not a promise of returns. "Accuracy" here means the math is causal, fills and fees are tested, and repeated runs agree. It does not mean the strategy predicts prices well. The benchmark below shows it losing to SPY over the sample period.
@@ -35,8 +35,8 @@ You do not need Rust, Cargo, Python or a build toolchain to use a release binary
 
 | Platform | Download |
 |---|---|
-| Windows 10/11 x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), file `tpi-rs-*-x86_64-pc-windows-msvc.zip` |
-| Linux x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), file `tpi-rs-*-x86_64-unknown-linux-gnu.tar.gz` |
+| Windows 10/11 x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), file `tpi-*-x86_64-pc-windows-msvc.zip` |
+| Linux x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), file `tpi-*-x86_64-unknown-linux-gnu.tar.gz` |
 | Source | `git clone https://github.com/kingabzpro/tpi-rs.git` |
 
 Every release includes a SHA-256 checksum. The zip or tarball contains the executable, `config/default.toml`, `.env.example`, `README.md` and `LICENSE`.
@@ -45,29 +45,29 @@ Every release includes a SHA-256 checksum. The zip or tarball contains the execu
 
 ```powershell
 # After extracting the release zip
-cd .\tpi-rs-v0.1.0-x86_64-pc-windows-msvc
+cd .\tpi-v0.1.1-x86_64-pc-windows-msvc
 Copy-Item .env.example .env      # optional, for Alpaca market data
 notepad .env                    # add your paper API key and secret
-.\tpi-rs.exe --doctor           # with keys
-.\tpi-rs.exe --offline --doctor # without keys
-.\tpi-rs.exe
+.\tpi.exe --doctor           # with keys
+.\tpi.exe --offline --doctor # without keys
+.\tpi.exe
 ```
 
 If you only want to see it work, offline mode needs no keys and no network:
 
 ```powershell
-.\tpi-rs.exe --offline --tickers AAPL,MSFT,NVDA --mode scan --strategy compare
+.\tpi.exe --offline --tickers AAPL,MSFT,NVDA --mode scan --strategy compare
 ```
 
 ### Linux
 
 ```bash
-tar -xzf tpi-rs-v0.1.0-x86_64-unknown-linux-gnu.tar.gz
-cd tpi-rs-v0.1.0-x86_64-unknown-linux-gnu
+tar -xzf tpi-v0.1.1-x86_64-unknown-linux-gnu.tar.gz
+cd tpi-v0.1.1-x86_64-unknown-linux-gnu
 cp .env.example .env
-./tpi-rs --doctor          # with keys
-./tpi-rs --offline --doctor # without keys
-./tpi-rs
+./tpi doctor            # with keys
+./tpi doctor --offline  # without keys
+./tpi
 ```
 
 The Linux build uses the system OpenSSL. On a minimal distribution install `libssl3` (or `libssl-dev` if building from source). The Windows build uses Schannel through `native-tls`, so there is no OpenSSL dependency.
@@ -96,7 +96,7 @@ The script is short and readable. Review it before running it.
 | Validation | Walk-forward selection, parameter stability, untouched out-of-sample holdout |
 | Trading | Alpaca paper by default; gated live execution with kill switch and flatten |
 | Dashboard | Sortable signals, price chart, rating panel, portfolio, backtest tables, progress and exports |
-| Evidence | 56 tests, mock exchange, no-lookahead checks, performance harness, release checksums |
+| Evidence | 63 tests, mock exchange, no-lookahead checks, performance harness, release checksums |
 
 ## How a signal is made
 
@@ -153,7 +153,7 @@ Measured on an Intel i7-12650H (10 cores, 16 threads), 16 GB RAM, Windows 11, re
 | Working set, 100 symbols loaded | 98 MB |
 | Release binary | 5.9 MB |
 
-These are synthetic-data measurements, not trading results. `tpi-rs --perf` reproduces them on your machine.
+These are synthetic-data measurements, not trading results. `tpi --perf` reproduces them on your machine.
 
 ## The dashboard
 
@@ -182,7 +182,7 @@ You need Rust 1.88 or newer and the MSVC C++ Build Tools on Windows. Step-by-ste
 git clone https://github.com/kingabzpro/tpi-rs.git
 cd tpi-rs
 cargo build --release
-.\target\release\tpi-rs.exe --doctor
+.\target\release\tpi.exe --doctor
 ```
 
 Linux:
@@ -190,24 +190,25 @@ Linux:
 ```bash
 sudo apt-get install -y build-essential pkg-config libssl-dev
 cargo build --release
-./target/release/tpi-rs --doctor
+./target/release/tpi doctor
 ```
 
 ## Command examples
 
 | Goal | Command |
 |---|---|
-| Interactive prompts | `tpi-rs` |
-| One ticker in detail | `tpi-rs --tickers AAPL --mode analyze --horizon medium` |
-| Top-100 short scan | `tpi-rs --top 100 --mode scan --horizon short --strategy consensus` |
-| Compare TPI and consensus | `tpi-rs --tickers AAPL,MSFT,NVDA --mode scan --strategy compare` |
-| Three-year benchmark | `tpi-rs --mode benchmark --strategy compare --export reports` |
-| Separate horizon backtests | `tpi-rs --mode backtest --horizon short` |
-| Paper trading, one dry run | `tpi-rs --mode paper --once --dry-run` |
-| Dashboard | `tpi-rs --tui --tickers AAPL,MSFT,NVDA --mode scan` |
-| Offline demo | `tpi-rs --offline --tickers AAPL,MSFT --mode scan` |
-| Performance harness | `tpi-rs --perf` |
-| Setup checks | `tpi-rs --doctor` |
+| Interactive prompts | `tpi` |
+| Scan tickers | `tpi run AAPL,MSFT,NVDA` |
+| Scan the Top 100 | `tpi run` or `tpi scan --top 100` |
+| One ticker in detail | `tpi analyze AAPL --horizon medium` |
+| Compare TPI and consensus | `tpi run AAPL,MSFT,NVDA --strategy compare` |
+| Three-year benchmark | `tpi benchmark --strategy compare --export reports` |
+| Separate horizon backtests | `tpi backtest --horizon short` |
+| Paper trading, one dry run | `tpi paper --once --dry-run` |
+| Dashboard | `tpi tui AAPL,MSFT,NVDA` |
+| Offline demo | `tpi run AAPL,MSFT --offline` |
+| Performance harness | `tpi perf` |
+| Setup checks | `tpi doctor` |
 
 All startup prompts have equivalent flags, so scripts never need to answer questions. `--output json` is available for scans, backtests and benchmarks.
 
@@ -217,7 +218,7 @@ All startup prompts have equivalent flags, so scripts never need to answer quest
 2. Copy `.env.example` to `.env`.
 3. Set `ALPACA_API_KEY` and `ALPACA_SECRET_KEY`.
 4. Keep `TPI_ALPACA_FEED=iex` unless you have a SIP subscription.
-5. Run `tpi-rs --doctor`.
+5. Run `tpi doctor`.
 
 Live trading is a separate decision. It requires `allow_live = true`, `paper = false`, `--i-understand-live-risk`, and typing `LIVE` at an interactive terminal. There are hard ceilings on order notional, daily loss, open positions and trades per day. A `KILL` file in the working directory blocks new orders, and `--flatten` cancels everything and closes positions.
 

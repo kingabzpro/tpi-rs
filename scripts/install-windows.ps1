@@ -11,10 +11,10 @@ $repo = "kingabzpro/tpi-rs"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 if ($Version -eq "latest") {
-    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -Headers @{ "User-Agent" = "tpi-rs-installer" }
+    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -Headers @{ "User-Agent" = "tpi-installer" }
 } else {
     $tag = if ($Version.StartsWith("v")) { $Version } else { "v$Version" }
-    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers @{ "User-Agent" = "tpi-rs-installer" }
+    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers @{ "User-Agent" = "tpi-installer" }
 }
 
 $tagName = $release.tag_name
@@ -50,9 +50,9 @@ Expand-Archive -Path $zipPath -DestinationPath $installDir -Force
 Remove-Item $zipPath -Force
 Remove-Item "$zipPath.sha256" -Force -ErrorAction SilentlyContinue
 
-$exe = Join-Path $installDir "tpi-rs.exe"
+$exe = Join-Path $installDir "tpi.exe"
 if (-not (Test-Path $exe)) {
-    throw "Install finished but tpi-rs.exe was not found in $installDir."
+    throw "Install finished but tpi.exe was not found in $installDir."
 }
 
 Write-Host ""
@@ -63,8 +63,8 @@ Write-Host ""
 Write-Host "Next:"
 Write-Host "  cd `"$installDir`""
 Write-Host "  Copy-Item .env.example .env"
-Write-Host "  .\tpi-rs.exe --doctor"
-Write-Host "  .\tpi-rs.exe --offline --tickers AAPL,MSFT --mode scan"
+Write-Host "  .\tpi.exe --doctor"
+Write-Host "  .\tpi.exe --offline --tickers AAPL,MSFT --mode scan"
 Write-Host ""
-Write-Host "Add this folder to PATH if you want to run tpi-rs from anywhere:"
+Write-Host "Add this folder to PATH if you want to run tpi from anywhere:"
 Write-Host "  $installDir"

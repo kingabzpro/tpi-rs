@@ -27,7 +27,8 @@ async fn main() {
 
 async fn run() -> Result<()> {
     config::load_dotenv();
-    let cli = Cli::parse();
+    let args = cli::expand_command_args(std::env::args().collect());
+    let cli = Cli::parse_from(args);
     cli::init_logging(cli.tui);
     let mut cfg = Config::load(cli.config.as_deref())?;
     if let Some(feed) = &cli.feed {
@@ -553,7 +554,7 @@ async fn doctor(cfg: &Config, offline: bool) -> Result<()> {
     }
     println!("{}", "-".repeat(72));
     if critical_ok {
-        println!("Doctor finished: all checks passed. Run `tpi-rs` or `tpi-rs --mode benchmark`.");
+        println!("Doctor finished: all checks passed. Run `tpi` or `tpi --mode benchmark`.");
         Ok(())
     } else {
         Err(Error::config(

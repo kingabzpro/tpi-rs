@@ -75,7 +75,7 @@ These were found by reading the upstream code and are the reasons several behavi
 - SQLite candle cache with coverage and TTL.
 - Alpaca paper/live execution with risk checks, reconciliation and flatten.
 - Ratatui dashboard, CLI prompts, doctor, CSV/JSON exports and a performance harness.
-- 56 tests including property, mock-exchange, no-lookahead, concurrency and safety tests.
+- 63 tests including property, mock-exchange, no-lookahead, concurrency and safety tests.
 
 ## 7. License and attribution
 

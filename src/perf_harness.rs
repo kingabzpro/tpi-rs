@@ -1,7 +1,7 @@
 //! Reproducible performance harness: latency percentiles, throughput, process
 //! memory and CPU utilization on deterministic synthetic data.
 //!
-//! Run with `tpi-rs --perf`. Results are hardware-specific and labelled as such.
+//! Run with `tpi --perf`. Results are hardware-specific and labelled as such.
 
 use crate::backtest::engine::{self, PreparedData};
 use crate::backtest::types::{BacktestConfig, FeeModel};

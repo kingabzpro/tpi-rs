@@ -65,7 +65,7 @@ cargo build --release
 The first build compiles dependencies and takes about 1-2 minutes on a modern laptop. The result is:
 
 ```text
-target\release\tpi-rs.exe
+target\release\tpi.exe
 ```
 
 Run the tests:
@@ -112,7 +112,7 @@ $env:TPI_ALPACA_FEED = "iex"
 ## 6. Verify with doctor
 
 ```powershell
-.\target\release\tpi-rs.exe --doctor
+.\target\release\tpi.exe --doctor
 ```
 
 Expected checks:
@@ -132,26 +132,26 @@ Doctor finished: all checks passed.
 Offline equivalent, with no credentials or network:
 
 ```powershell
-.\target\release\tpi-rs.exe --offline --doctor
+.\target\release\tpi.exe --offline --doctor
 ```
 
 ## 7. First runs
 
 ```powershell
 # Interactive prompts: ticker, horizon, mode, strategy, risk, capital
-.\target\release\tpi-rs.exe
+.\target\release\tpi.exe
 
 # One ticker
-.\target\release\tpi-rs.exe --tickers AAPL --mode analyze
+.\target\release\tpi.exe --tickers AAPL --mode analyze
 
 # Top 100 short-horizon scan
-.\target\release\tpi-rs.exe --top 100 --mode scan --horizon short --strategy consensus
+.\target\release\tpi.exe --top 100 --mode scan --horizon short --strategy consensus
 
 # Dashboard
-.\target\release\tpi-rs.exe --tui --tickers AAPL,MSFT,NVDA --mode scan
+.\target\release\tpi.exe --tui --tickers AAPL,MSFT,NVDA --mode scan
 
 # Paper trading one cycle without orders
-.\target\release\tpi-rs.exe --mode paper --once --dry-run
+.\target\release\tpi.exe --mode paper --once --dry-run
 ```
 
 ## 8. Data cache and reports
@@ -164,13 +164,13 @@ Offline equivalent, with no credentials or network:
 To force a full refresh (for example after a split, dividend adjustment or cache suspicion):
 
 ```powershell
-.\target\release\tpi-rs.exe --mode scan --tickers AAPL --refresh
+.\target\release\tpi.exe --mode scan --tickers AAPL --refresh
 ```
 
 To disable the cache for one run:
 
 ```powershell
-.\target\release\tpi-rs.exe --mode benchmark --no-cache
+.\target\release\tpi.exe --mode benchmark --no-cache
 ```
 
 ## 9. Linux build
@@ -239,7 +239,7 @@ The binary is unsigned. For local use, choose "More info" then "Run anyway", or 
 
 ### PowerShell cannot find the executable
 
-Use the explicit path `.\target\release\tpi-rs.exe`, or add `target\release` to your `PATH`.
+Use the explicit path `.\target\release\tpi.exe`, or add `target\release` to your `PATH`.
 
 ## 11. Environment variable reference
 

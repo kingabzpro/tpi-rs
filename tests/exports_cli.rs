@@ -186,7 +186,7 @@ fn benchmark_export_includes_per_leg_artifacts() {
 
 #[test]
 fn cli_offline_scan_emits_valid_json() {
-    let output = Command::new(env!("CARGO_BIN_EXE_tpi-rs"))
+    let output = Command::new(env!("CARGO_BIN_EXE_tpi"))
         .args([
             "--offline",
             "--tickers",
@@ -201,7 +201,7 @@ fn cli_offline_scan_emits_valid_json() {
             "json",
         ])
         .output()
-        .expect("failed to run tpi-rs");
+        .expect("failed to run tpi");
     assert!(
         output.status.success(),
         "stderr: {}",
@@ -216,11 +216,38 @@ fn cli_offline_scan_emits_valid_json() {
 }
 
 #[test]
+fn cli_command_forms_work() {
+    let output = Command::new(env!("CARGO_BIN_EXE_tpi"))
+        .args(["run", "AAPL,MSFT", "--offline", "--output", "json"])
+        .output()
+        .expect("failed to run tpi run");
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let value: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout is not JSON");
+    assert_eq!(value["signals"].as_array().unwrap().len(), 2);
+    assert_eq!(value["strategy"], "tpi");
+
+    let doctor = Command::new(env!("CARGO_BIN_EXE_tpi"))
+        .args(["doctor", "--offline"])
+        .output()
+        .expect("failed to run tpi doctor");
+    assert!(
+        doctor.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&doctor.stderr)
+    );
+}
+
+#[test]
 fn cli_offline_doctor_succeeds() {
-    let output = Command::new(env!("CARGO_BIN_EXE_tpi-rs"))
+    let output = Command::new(env!("CARGO_BIN_EXE_tpi"))
         .args(["--offline", "--doctor"])
         .output()
-        .expect("failed to run tpi-rs");
+        .expect("failed to run tpi");
     assert!(
         output.status.success(),
         "stdout: {}\nstderr: {}",
@@ -234,10 +261,10 @@ fn cli_offline_doctor_succeeds() {
 
 #[test]
 fn cli_without_tickers_fails_clearly() {
-    let output = Command::new(env!("CARGO_BIN_EXE_tpi-rs"))
+    let output = Command::new(env!("CARGO_BIN_EXE_tpi"))
         .args(["--offline", "--mode", "analyze", "--no-interactive"])
         .output()
-        .expect("failed to run tpi-rs");
+        .expect("failed to run tpi");
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(

@@ -18,7 +18,7 @@ All numbers below were produced on the machine described in section 1 with the r
 Command:
 
 ```powershell
-.\target\release\tpi-rs.exe --perf
+.\target\release\tpi.exe --perf
 ```
 
 Workload: 100 synthetic symbols x 1,105 daily bars; 50 symbols x 783 sessions for the backtest. Synthetic data removes network variance.
@@ -70,7 +70,7 @@ The fast path is what makes 100-backtest grid sweeps practical. The detailed pat
 Command:
 
 ```powershell
-.\target\release\tpi-rs.exe --mode benchmark --strategy compare --export reports
+.\target\release\tpi.exe --mode benchmark --strategy compare --export reports
 ```
 
 | Assumption | Value |
@@ -228,19 +228,19 @@ The default medium setting (atr=2.5, rsi=75, exit=20) is not at the top. That is
 
 ```powershell
 # Performance harness
-.\target\release\tpi-rs.exe --perf
+.\target\release\tpi.exe --perf
 
 # Criterion
 cargo bench --bench indicators
 cargo bench --bench backtest
 
 # Full benchmark with all artifacts
-.\target\release\tpi-rs.exe --mode benchmark --strategy compare --export reports
+.\target\release\tpi.exe --mode benchmark --strategy compare --export reports
 
 # Separate horizon backtests
-.\target\release\tpi-rs.exe --mode backtest --horizon short  --output json > reports/backtest-short.json
-.\target\release\tpi-rs.exe --mode backtest --horizon medium --output json > reports/backtest-medium.json
-.\target\release\tpi-rs.exe --mode backtest --horizon long   --output json > reports/backtest-long.json
+.\target\release\tpi.exe --mode backtest --horizon short  --output json > reports/backtest-short.json
+.\target\release\tpi.exe --mode backtest --horizon medium --output json > reports/backtest-medium.json
+.\target\release\tpi.exe --mode backtest --horizon long   --output json > reports/backtest-long.json
 ```
 
 Artifacts from the recorded run:

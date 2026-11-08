@@ -21,6 +21,6 @@ Market data: Alpaca daily bars, `adjustment=all`, `feed=iex`, 752 sessions, 2023
 Reproduce:
 
 ```powershell
-.\target\release\tpi-rs.exe --mode benchmark --strategy compare --export reports
-.\target\release\tpi-rs.exe --perf
+.\target\release\tpi.exe benchmark --strategy compare --export reports
+.\target\release\tpi.exe perf
 ```
