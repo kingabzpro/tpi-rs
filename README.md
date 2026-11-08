@@ -82,8 +82,8 @@ No Rust, Cargo, Python or build tools required.
 
 | Platform | Download |
 |---|---|
-| Windows 10/11 x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), `tpi-*-x86_64-pc-windows-msvc.zip` |
-| Linux x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), `tpi-*-x86_64-unknown-linux-gnu.tar.gz` |
+| Windows 10/11 x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), Windows zip |
+| Linux x64 (glibc) | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), Linux tarball |
 
 Every asset ships with a SHA-256 checksum. Extract it, then try the offline demo:
 
