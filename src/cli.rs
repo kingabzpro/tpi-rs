@@ -102,7 +102,7 @@ pub fn expand_command_args(args: Vec<String>) -> Vec<String> {
 #[command(
     name = "tpi",
     version,
-    about = "A fast, deterministic Rust trading system for US stocks",
+    about = "A super fast algorithmic trading system for US stocks, built in Rust",
     after_help = "Commands:
   tpi                     interactive prompts
   tpi run [TICKERS]       scan tickers, or the Top 100 if none are given
@@ -351,7 +351,7 @@ pub fn resolve(cli: &Cli, cfg: &Config) -> Result<Selection> {
 
     if interactive {
         println!(
-            "TPI-RS {} | deterministic trend/breakout trading",
+            "TPI-RS {} | algorithmic trend/breakout trading",
             crate::VERSION
         );
         let default_tickers = if !tickers.is_empty() {

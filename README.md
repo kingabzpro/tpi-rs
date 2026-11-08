@@ -2,7 +2,7 @@
 
 # TPI-RS
 
-**A deterministic US stock trend system in one native Rust binary.**
+**Super fast algorithmic trading for US stocks, built entirely in Rust.**
 
 [![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/kingabzpro/tpi-rs?display_name=tag&sort=semver)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)
 
@@ -40,6 +40,18 @@ Same $10,000, same period (November 2023 to November 2026), real Alpaca IEX adju
 
 **SPY still wins on return.** The recent exit-policy change lifted the short horizon to +25.24% while keeping its max drawdown at roughly one third of SPY's. The medium default stayed at +9.13%; removing the time stop hurt that horizon. In the medium-horizon walk-forward, all four out-of-sample folds were negative, and the untouched final six months returned -0.66%.
 
+### Last 3 months
+
+| Portfolio | Return | Max drawdown |
+|---|---:|---:|
+| TPI short | -0.86% | 3.18% |
+| TPI medium | -1.41% | 2.28% |
+| TPI long | -2.01% | 3.23% |
+| SPY | +1.38% | 3.06% |
+| QQQ | +0.43% | 9.15% |
+
+2026-07-31 to 2026-10-30, from the same daily equity curves. All three TPI horizons were negative over this stretch; SPY and QQQ were positive. The latest full six-month window is in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+
 > [!WARNING]
 > This is research software, not investment advice. It underperformed SPY over the sample. Live trading is disabled by default and requires deliberate confirmations. Paper trade first.
 
@@ -62,7 +74,7 @@ Same $10,000, same period (November 2023 to November 2026), real Alpaca IEX adju
 | Idle process | 8 MB |
 | 100 symbols loaded | 98 MB |
 | Windows binary | 6 MB |
-| Determinism | six concurrent scans byte-identical |
+| Repeatable scans | six concurrent scans byte-identical |
 
 The hot path is a precomputed causal series per symbol, a Rayon scan over the universe, and a single reuse of that series across every backtest day and parameter set. There is no garbage collector, interpreter or model inference in the loop. Full numbers: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
