@@ -4,19 +4,19 @@
 
 **Super fast algorithmic trading for US stocks, built entirely in Rust.**
 
-[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)
+[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)
 
 </div>
 
 <p align="center">
   <a href="docs/screenshots/tui.png">
-    <img src="docs/screenshots/tui.png" alt="TPI-RS terminal dashboard with ranked signals, rating and trade plan" width="920">
+    <img src="docs/screenshots/tui.png" alt="TPI-RS Windows terminal dashboard with ranked signals, rating and trade plan" width="920">
   </a>
 </p>
 
-<p align="center"><sub>The dashboard (<code>tpi tui</code>): ranked signals, 26-vote rating, trade plan, chart, portfolio and backtests.</sub></p>
+<p align="center"><sub>Captured on Windows 11. The dashboard (<code>tpi tui</code>): ranked signals, 26-vote rating, trade plan, chart, portfolio and backtests.</sub></p>
 
-TPI-RS scans US stocks for Donchian breakouts, confirms them with EMA trend, RSI, ATR and volume filters, adds a 26-vote technical rating, then backtests or trades the result through Alpaca. No Python, Docker, WSL, GPU or ML model.
+TPI-RS is a Windows-native algorithmic trading system for US stocks. It scans for Donchian breakouts, confirms them with EMA trend, RSI, ATR and volume filters, adds a 26-vote technical rating, then backtests or trades the result through Alpaca. No Python, Docker, WSL, GPU or ML model.
 
 It is fast and small: scan math for 100 symbols takes 0.05 ms, a 50-symbol, 3-year backtest computes in 33 ms, and 100 symbols fit in 98 MB. It is not a market-beating strategy: SPY still wins on return, and the results below say so plainly.
 
@@ -28,7 +28,7 @@ It is fast and small: scan math for 100 symbols takes 0.05 ms, a 50-symbol, 3-ye
   </a>
 </p>
 
-Same $10,000, same period (November 2023 to November 2026), real Alpaca IEX adjusted bars, costs included.
+Measured on Windows 11. Same $10,000, same period (November 2023 to November 2026), real Alpaca IEX adjusted bars, costs included.
 
 | Portfolio | Total return | CAGR | Sharpe | Max drawdown |
 |---|---:|---:|---:|---:|
@@ -52,6 +52,8 @@ Same $10,000, same period (November 2023 to November 2026), real Alpaca IEX adju
 
 2026-07-31 to 2026-10-30, from the same daily equity curves. All three TPI horizons were negative over this stretch; SPY and QQQ were positive. The latest full six-month window is in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
+**Recent experiment:** a hard 1.2x volume gate lifted the short horizon to +33.47% in-sample, but 1.1x and 1.3x both underperformed. It was rejected as threshold-sensitive. Details in [docs/RESEARCH.md](docs/RESEARCH.md).
+
 > [!WARNING]
 > This is research software, not investment advice. It underperformed SPY over the sample. Live trading is disabled by default and requires deliberate confirmations. Paper trade first.
 
@@ -59,7 +61,7 @@ Same $10,000, same period (November 2023 to November 2026), real Alpaca IEX adju
 <summary><strong>Console output</strong>: real short-horizon backtest</summary>
 <br>
 
-![TPI-RS short-horizon backtest output](docs/screenshots/backtest.png)
+![TPI-RS short-horizon backtest output on Windows 11](docs/screenshots/backtest.png)
 
 </details>
 
@@ -88,23 +90,16 @@ The hot path is a precomputed causal series per symbol, a Rayon scan over the un
 
 Rules and per-horizon parameters: [docs/STRATEGY.md](docs/STRATEGY.md).
 
-## Run it
+## Run it on Windows
 
 No Rust, Cargo, Python or build tools required.
 
-| Platform | Download |
-|---|---|
-| Windows 10/11 x64 | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), `tpi-*-windows-x64.zip` |
-| Linux x64 (glibc) | [Latest release](https://github.com/kingabzpro/tpi-rs/releases/latest), `tpi-*-linux-x64-gnu.tar.gz` |
+[![Download for Windows](https://img.shields.io/badge/download-Windows%2010%2F11-blue?style=for-the-badge)](https://github.com/kingabzpro/tpi-rs/releases/latest)
 
-Every asset ships with a SHA-256 checksum. Extract it, then try the offline demo:
+The release includes the Windows zip and a matching `.sha256` file. The zip contains `tpi.exe`, `config/default.toml`, `.env.example`, and `README.md`. Extract it and try the offline demo:
 
 ```powershell
 .\tpi.exe --offline --tickers AAPL,MSFT,NVDA --mode scan --strategy compare
-```
-
-```bash
-./tpi --offline --tickers AAPL,MSFT,NVDA --mode scan --strategy compare
 ```
 
 For Alpaca data, copy `.env.example` to `.env`, add your paper keys, then run `.\tpi.exe doctor`. The Windows installer verifies the checksum and installs to `%LOCALAPPDATA%\TPI-RS`: [scripts/install-windows.ps1](scripts/install-windows.ps1).
