@@ -1,7 +1,7 @@
 # Research Review and Improvement Plan
 
 > [!NOTE]
-> No specific TPI PDF was present in the workspace or attachments for this task. This review maps the TPI strategy brief used to build TPI-RS to the public research behind its components. If you have a different paper in mind, share it and I will revise this page against that text.
+> No TPI-specific PDF was supplied with this task. I reviewed the TPI strategy brief used to build TPI-RS, the repository's own benchmark, and the closest directly relevant public paper in full: Wilcox and Crittenden (2005), "Does Trend Following Work on Stocks?" If you meant a different paper, share it and I will revise this page against that text.
 
 ## The short version
 
@@ -11,6 +11,28 @@ TPI-RS has a reasonable trend/breakout entry, but it puts at most one stock on a
 
 That does not mean the strategy would beat the index with more leverage. It means the current result tells us more about exposure and breadth than about the breakout rule. Any serious improvement has to address portfolio construction, validation quality and data bias, not just re-tune the ATR multiple.
 
+## What the stock paper actually found
+
+Wilcox and Crittenden tested a long-only trend system on 24,000+ US securities from 1983 to 2004. Their database included delisted companies, adjusted for corporate actions, applied price and liquidity filters at each point in time, and charged commissions and slippage. That is a much cleaner test than a current-index universe.
+
+Their entry rule was simple: buy at the next open after a close at an all-time high. Their exit was a 10 ATR trailing stop. They also applied portfolio-level risk limits. The hypothetical 1991-2004 portfolio results, net of estimated costs, were:
+
+| Metric | Trend system | S&P 500 total return |
+|---|---:|---:|
+| Annual compounded return | 19.3% | 12.0% |
+| Annual standard deviation | 15.6% | 14.4% |
+| Maximum drawdown | -20.8% | -44.7% |
+
+The authors are explicit that "portfolio level money management is absolutely essential" and that position sizing, scaling in and out, total open risk constraints and stop discipline matter as much as the entry signal.
+
+That paper is useful here for three reasons:
+
+1. It shows stock trend following can have positive expectancy when tested with delistings, costs and liquidity filters. Our static 50-stock universe does not meet that bar.
+2. It used a wide trailing stop and no fixed time stop. TPI-RS uses a 2.5 ATR stop and a 20-session cap on the medium horizon, which may cut winners early.
+3. It held many positions and managed total portfolio risk. TPI-RS holds one. That is the largest structural difference between the two designs.
+
+The 19.3% is hypothetical, not a promise, and it covers a different period and rule set. But the design lesson is directly relevant to the underperformance in our report.
+
 ## What the research supports
 
 | Idea | Evidence | What it means here |
@@ -18,7 +40,7 @@ That does not mean the strategy would beat the index with more leverage. It mean
 | Time-series momentum exists across many assets | Moskowitz, Ooi and Pedersen (2012) find persistent 1-12 month own-return predictability across 58 futures markets | The core breakout/trend premise is not nonsense, but the evidence is mostly diversified futures, not one US stock at a time |
 | Trend following is robust over long samples | Hurst, Ooi and Pedersen (2017) document over a century of trend returns, with crisis alpha | A three-year bull-market sample is too short to judge the approach, but it is also not evidence of an edge |
 | Volatility scaling improves risk-adjusted outcomes | Moreira and Muir (2017) show that scaling exposure down when volatility is high improves Sharpe ratios | Fixed 1% risk per trade is not the same as targeting portfolio volatility. Exposure should be managed at the portfolio level |
-| Breakout systems need wide diversification | Turtle rules and Clenow's trend-following work spread risk across many markets and positions | One position makes the outcome depend on a handful of stock-specific events |
+| Breakout systems need wide diversification | Wilcox and Crittenden held a large book and still called portfolio risk management essential; Turtle rules and Clenow spread risk across many markets | One position makes the outcome depend on a handful of stock-specific events |
 | Backtest overfitting is the default failure mode | Bailey, Borwein, Lopez de Prado and Zhu (2014); Harvey, Liu and Zhu (2016) | An 18-combination grid over 54 trades is thin. The negative OOS folds are a warning, not noise to ignore |
 | Composites can reduce single-indicator noise | TradingView-style technical ratings combine many moving-average and oscillator votes | The rating is a useful summary, but it is not validated by this project and is highly correlated with price trend |
 
@@ -26,11 +48,11 @@ That does not mean the strategy would beat the index with more leverage. It mean
 
 | Area | What TPI-RS does now | Why it matters | Suggested change |
 |---|---|---|---|
-| Breadth | One stock at a time | A single name, sector or earnings event dominates results | Allow 3-5 concurrent positions with equal risk and sector/correlation caps |
+| Breadth | One stock at a time | A single name, sector or earnings event dominates results; the stock paper held a broad book and stressed total open risk | Allow 3-5 concurrent positions with equal risk and sector/correlation caps |
 | Volatility targeting | Fixed 1% equity risk per trade | Realized portfolio vol was 4.7%, far below equity indices | Target 8-12% annualized portfolio vol, with a hard cap and a drawdown brake |
 | Candidate ranking | Composite score, then rating, then symbol | Does not select the strongest relative-strength names | Add 12-1 cross-sectional momentum and dollar-volume liquidity to the ranking |
 | Regime | Per-stock EMA50/200 only | Trend systems bleed in choppy markets | Add a market regime filter: SPY above 200-day, breadth, realized-vol percentile |
-| Exit | 20-session maximum hold for the medium horizon | A time stop cuts the right tail that pays for trend following | Remove or lengthen the time stop; rely on channel and ATR trailing exits |
+| Exit | 20-session maximum hold and a 2.5 ATR stop | The stock trend paper used a 10 ATR trailing stop with no fixed time stop; a tight stop and time cap cut the right tail | Test 5-10 ATR trailing stops and no fixed hold; rely on channel and ATR exits |
 | Pyramiding | None | Research systems often add to winners | Allow one or two 0.5R adds while the trend remains valid |
 | Parameter selection | 18-combination grid, four folds | Multiple testing can produce a flattering in-sample winner | Use purged walk-forward, nested selection and Deflated Sharpe |
 | Universe | Static 50 large caps | Survivorship and selection bias | Point-in-time universe including delistings, with SIP data |
@@ -106,6 +128,7 @@ If a change fails these, it does not go into the default configuration.
 
 ## References
 
+- Wilcox, C., and Crittenden, E. (2005). *Does Trend Following Work on Stocks?* Blackstar Funds. [PDF](https://www.cis.upenn.edu/~mkearns/finread/trend.pdf)
 - Moskowitz, T., Ooi, Y. H., and Pedersen, L. H. (2012). *Time Series Momentum*. Journal of Financial Economics 104(2), 228-250. [SSRN 2089463](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2089463)
 - Hurst, B., Ooi, Y. H., and Pedersen, L. H. (2017). *A Century of Evidence on Trend-Following Investing*. Journal of Portfolio Management 44(1). [SSRN 2993026](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2993026)
 - Moreira, A., and Muir, T. (2017). *Volatility-Managed Portfolios*. Journal of Finance 72(4). [NBER w22208](https://www.nber.org/papers/w22208)
