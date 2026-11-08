@@ -148,7 +148,7 @@ These runs use the same 50-stock universe, period, costs and risk profile, chang
 
 | Horizon | Final | Total | CAGR | Sharpe | Sortino | Max DD | Trades | Win | PF | Exposure |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Short | $10,973.22 | +9.73% | +3.15% | 0.56 | 0.83 | 5.55% | 150 | 50.0% | 1.20 | 86% |
+| Short | $12,524.09 | +25.24% | +7.80% | 1.09 | 1.80 | 6.35% | 55 | 47.3% | 1.96 | 88% |
 | Medium | $10,913.21 | +9.13% | +2.96% | 0.65 | 0.97 | 5.15% | 54 | 40.7% | 1.38 | 90% |
 | Long | $10,005.14 | +0.05% | +0.02% | 0.02 | 0.03 | 8.09% | 27 | 48.1% | 1.00 | 92% |
 
@@ -156,11 +156,11 @@ Six-month returns:
 
 | Horizon | W1 | W2 | W3 | W4 | W5 | W6 |
 |---|---:|---:|---:|---:|---:|---:|
-| Short | +0.90% | +4.65% | -1.60% | -1.81% | +5.62% | +0.70% |
+| Short | +3.18% | +0.78% | +3.45% | +3.48% | +12.08% | +1.49% |
 | Medium | +7.47% | +0.17% | -1.55% | +2.30% | +1.97% | -0.51% |
 | Long | +2.53% | +0.20% | +0.70% | +3.79% | -3.89% | -2.82% |
 
-The short horizon trades often and captures more small moves, but costs and whipsaw keep the result near the medium horizon. The long horizon's looser breakout and 126-session hold do not work in this sample.
+The short horizon no longer exits after five sessions. Holding until the channel or ATR trail lifts its return and Sharpe, with a 6.35% drawdown versus 5.55% before. The medium horizon keeps its 20-session cap because removing that cap made its results worse. The long horizon's looser breakout and 126-session hold did not work in this sample.
 
 ## 8. Walk-forward validation
 

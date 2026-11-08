@@ -2,6 +2,14 @@
 
 All notable changes to TPI-RS are recorded here. The project follows semantic versioning.
 
+## [0.1.2] - 2026-11-08
+
+### Changed
+
+- Removed the five-session time stop on the short horizon. The short horizon now exits on its channel, ATR trail or SELL signal, with a 252-session safety cap. This improved the real-data short-horizon backtest from +9.73% and Sharpe 0.56 to +25.24% and Sharpe 1.09, with drawdown rising from 5.55% to 6.35%.
+- Medium and long horizons keep their existing maximum holding periods. Removing the medium time stop worsened results.
+- Updated strategy docs, benchmark tables and the bundled short-horizon artifact.
+
 ## [0.1.1] - 2026-11-08
 
 ### Changed

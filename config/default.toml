@@ -42,7 +42,8 @@ breakout_period = 20
 confirm_period = 40
 exit_period = 10
 atr_stop_mult = 2.0
-max_hold_days = 5
+# No 5-session time stop. 252 is a safety cap; exits come from the channel and ATR trail.
+max_hold_days = 252
 rsi_min = 50.0
 rsi_max = 78.0
 buy_threshold = 62.0

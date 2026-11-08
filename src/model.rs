@@ -64,7 +64,7 @@ impl ta::Volume for Bar {
 )]
 #[serde(rename_all = "snake_case")]
 pub enum Horizon {
-    /// 1 to 5 trading days.
+    /// Short-term setup, normally 1 to 5 days, with a trend-following exit.
     Short,
     /// 1 to 4 weeks.
     Medium,
@@ -75,7 +75,7 @@ pub enum Horizon {
 impl Horizon {
     pub fn label(self) -> &'static str {
         match self {
-            Self::Short => "Short (1-5 trading days)",
+            Self::Short => "Short-term (1-5 day setup, trend exit)",
             Self::Medium => "Medium (1-4 weeks)",
             Self::Long => "Long (1-6 months)",
         }
@@ -96,7 +96,7 @@ impl Horizon {
                 confirm_period: 40,
                 exit_period: 10,
                 atr_stop_mult: 2.0,
-                max_hold_days: 5,
+                max_hold_days: 252,
                 rsi_min: 50.0,
                 rsi_max: 78.0,
                 buy_threshold: 62.0,

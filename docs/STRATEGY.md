@@ -29,7 +29,7 @@ All values at bar `i` use only bars `0..=i`.
 
 ## 3. Horizon parameters
 
-The three horizons use different channels, holding limits and thresholds. They are evaluated and backtested separately.
+The three horizons use different channels, holding limits and thresholds. They are evaluated and backtested separately. The short horizon no longer exits after five sessions; winners are held until the channel or ATR trail exits, with a 252-session safety cap.
 
 | Parameter | Short | Medium | Long |
 |---|---:|---:|---:|
@@ -37,7 +37,7 @@ The three horizons use different channels, holding limits and thresholds. They a
 | Confirmation channel | 40 | 40 | 40 |
 | Exit channel | 10 | 20 | 20 |
 | ATR stop multiple | 2.0 | 2.5 | 3.5 |
-| Maximum hold | 5 sessions | 20 sessions | 126 sessions |
+| Maximum hold | 252-session safety cap | 20 sessions | 126 sessions |
 | RSI band | 50-78 | 50-75 | 50-75 |
 | Buy score threshold | 62 | 68 | 72 |
 | Minimum ATR% | 0.8 | 0.6 | 0.5 |

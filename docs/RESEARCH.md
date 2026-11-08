@@ -172,6 +172,28 @@ The five-position medium arm looked strong over the full period, but it failed t
 
 **Decision:** not merged. The branch was deleted, the multi-position engine changes and experiment example were removed, and no dependencies were added. The next breadth test should use 0.25-0.35% risk per slot or apply breadth only in a confirmed market uptrend, with the first half used for selection and the second half reserved for validation.
 
+## Merged: short-horizon time stop removal
+
+The exit-policy experiment had a clear winner on one horizon. Removing the five-session maximum hold on the short horizon and letting the channel or ATR trail close the trade improved every relevant measure:
+
+| Short horizon | Return | Sharpe | Max DD | Trades | Average hold |
+|---|---:|---:|---:|---:|---:|
+| Before, 5-session cap | +9.73% | 0.56 | 5.55% | 150 | 5.3 sessions |
+| After, 252-session safety cap | +25.24% | 1.09 | 6.35% | 55 | 13.0 sessions |
+
+The result was not just a full-sample effect:
+
+| Period | Before | After |
+|---|---|---|
+| First half | +3.98%, Sharpe 0.46, 4.32% DD | +7.35%, Sharpe 0.81, 4.48% DD |
+| Second half | +5.53%, Sharpe 0.65, 5.55% DD | +18.55%, Sharpe 1.53, 6.09% DD |
+
+It also improved five of the six six-month windows. The best winning trade contributed 24.1% of gross trading profit, below the 35% concentration limit.
+
+The medium horizon was different. Doubling or removing its time stop dropped return from +9.13% to +0.70% or -0.78% and raised drawdown above 11%. Long was unchanged because its 126-session cap was never binding. Only the short horizon changed.
+
+**Decision:** merged. The short horizon now has a 252-session safety cap, which is effectively no time stop on this data. The 1-5 day label refers to the setup, not a forced exit. Medium and long keep their existing caps. No dependencies or model weights were added.
+
 ## Current status
 
 None of the strategy changes above are implemented in the default configuration yet. The published benchmark is the honest baseline: TPI +9.13%, TPI + Consensus +14.15%, SPY +86.67% over 2023-11-01 to 2026-11-01, with negative walk-forward OOS folds. See [BENCHMARKS.md](BENCHMARKS.md) for the full tables.
