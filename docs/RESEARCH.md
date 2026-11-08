@@ -194,6 +194,32 @@ The medium horizon was different. Doubling or removing its time stop dropped ret
 
 **Decision:** merged. The short horizon now has a 252-session safety cap, which is effectively no time stop on this data. The 1-5 day label refers to the setup, not a forced exit. Medium and long keep their existing caps. No dependencies or model weights were added.
 
+## Tested and rejected: short-horizon volume gate
+
+The last three months were negative on all three horizons. The short-horizon losses were concentrated in low-volume breakouts: AAPL entered at 1.04x its 20-day average volume and lost 10.48%, while BRK.B entered at 1.14x and lost 1.77%. I tested a hard gate requiring at least 1.2x average volume before a short-horizon BUY.
+
+The method was fixed before the full-period run: same data, costs, universe and one-position engine; only the short-horizon volume gate changed. Medium and long were untouched and their results did not change.
+
+| Period | Baseline return / Sharpe / max DD / trades | 1.2x gate |
+|---|---:|---:|
+| Full period | +25.24% / 1.09 / 6.35% / 55 | **+33.47% / 1.36 / 4.21% / 53** |
+| First half | +7.35% / 0.81 / 4.48% / 27 | +7.64% / 0.88 / 4.10% / 28 |
+| Second half | +18.55% / 1.53 / 6.09% / 25 | +24.99% / 1.77 / 4.21% / 27 |
+| Last 3 months | -0.86% / -0.61 / 3.18% / 6 | +1.43% / 0.76 / 3.58% / 6 |
+
+The 1.2x arm looked strong. It improved the full period, both halves and the recent window, and cut full-period drawdown. The problem was sensitivity to the threshold:
+
+| Gate | Full return | Sharpe | Max DD | Trades | First half | Second half | Last 3 months |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Baseline | +25.24% | 1.09 | 6.35% | 55 | +7.35% | +18.55% | -0.86% |
+| 1.1x | +24.09% | 1.04 | 7.43% | 58 | +1.97% | +21.46% | -0.98% |
+| 1.2x | +33.47% | 1.36 | 4.21% | 53 | +7.64% | +24.99% | +1.43% |
+| 1.3x | +19.58% | 1.11 | 6.72% | 45 | +12.81% | +8.56% | +4.21% |
+
+Only 1.2x worked. At 1.1x the full-period return and recent window were worse than baseline. At 1.3x the full-period return and second half were worse. The trade count barely changed, but the trade sequence changed almost completely, so the gain came from a different path through the same data, not from a stable improvement in trade quality. That is the signature of a threshold fitted to the sample.
+
+**Decision:** rejected. The branch was deleted, the gate was removed and no dependencies were added. The default remains the baseline. A volume filter is still worth testing later, but as a graded score or with a longer, point-in-time sample and a pre-declared threshold range, not by choosing the best threshold from this dataset.
+
 ## Current status
 
-None of the strategy changes above are implemented in the default configuration yet. The published benchmark is the honest baseline: TPI +9.13%, TPI + Consensus +14.15%, SPY +86.67% over 2023-11-01 to 2026-11-01, with negative walk-forward OOS folds. See [BENCHMARKS.md](BENCHMARKS.md) for the full tables.
+The short horizon now uses the 252-session safety cap from the merged exit experiment. Its published benchmark is +25.24%, Sharpe 1.09 and 6.35% max drawdown. Medium (+9.13%) and long (+0.05%) are unchanged. The short-horizon volume gate, ridge gate and multi-position changes are not merged. Walk-forward out-of-sample folds remain negative. See [BENCHMARKS.md](BENCHMARKS.md) for the full tables.
