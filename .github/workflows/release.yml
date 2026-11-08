@@ -72,7 +72,8 @@ jobs:
           cp -r config "$stage/"
           asset="dist/tpi-$tag-x86_64-unknown-linux-gnu.tar.gz"
           tar -czf "$asset" -C "$stage" .
-          sha256sum "$asset" > "$asset.sha256"
+          base=$(basename "$asset")
+          ( cd dist && sha256sum "$base" > "$base.sha256" )
           ls -lh dist
 
       - name: Upload packaged files
