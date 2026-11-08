@@ -1,0 +1,85 @@
+Running headline, walk-forward and stability analysis...
+
+================ TPI-RS THREE-YEAR BENCHMARK ================
+Generated 2026-11-08 11:39 UTC | data=Alpaca+cache | feed=iex | adjusted=true | universe 50
+
+=== TPI medium 2023-11-01..2026-11-01 [TPI] ===
+Period 2023-11-01 .. 2026-11-01 | 752 sessions | universe 50 | horizon medium | strategy TPI | risk Balanced
+Capital $10000.00 -> $10913.21 | total +9.13% | CAGR +2.96% | Sharpe 0.65 | Sortino 0.97 | max DD 5.15% | Calmar 0.58
+Vol 4.71% | exposure 90% | trades 54 (win 40.7%, PF 1.38, avg win +10.53%, avg loss -3.65%, avg trade +2.13%) | fees $3.64
+Rules: Long-only, one position; signals at close, fills at next open; 2.0 bps spread, 5.0 bps slippage, 0.0 bps commission; adjusted daily bars; ATR trailing stop 2.5x; max hold 20 sessions
+
+Six-month windows (continuous portfolio):
+  WINDOW                       RETURN       SPY       QQQ    MAX DD  TRADES    WIN%
+  2023-11-01 .. 2024-05-01      7.47%    19.17%    18.44%     1.95%       6    83.3
+  2024-05-01 .. 2024-11-01      0.17%    14.41%    15.13%     2.02%       8    50.0
+  2024-11-01 .. 2025-05-01     -1.55%    -1.14%    -0.25%     3.99%      10    20.0
+  2025-05-01 .. 2025-11-01      2.30%    23.81%    32.71%     1.68%       8    75.0
+  2025-11-01 .. 2026-05-01      1.97%     6.25%     7.40%     4.53%      10    20.0
+  2026-05-01 .. 2026-11-01     -0.51%     5.66%     3.59%     4.37%      12    25.0
+
+Comparisons over the same period:
+  STRATEGY                FINAL     RETURN     CAGR   SHARPE    MAX DD       VOL
+  TPI portfolio        10913.21      9.13%    2.96%     0.65     5.15%     4.71%
+  SPY                  18667.23     86.67%   23.17%     1.47    18.74%    14.84%
+  QQQ                  19944.79     99.45%   25.92%     1.21    22.72%    20.45%
+  Buy&Hold Universe    19228.27     92.28%   24.39%     1.53    18.96%    14.90%
+  Cash                 10000.00      0.00%    0.00%     0.00     0.00%     0.00%
+
+Relative to benchmarks:
+  SPY: alpha +1.23%/yr | beta 0.08 | corr 0.26 | tracking error 14.35%
+  QQQ: alpha +1.79%/yr | beta 0.05 | corr 0.22 | tracking error 19.95%
+Computed in 31 ms.
+
+=== TPI medium 2023-11-01..2026-11-01 [TPI+Consensus] ===
+Period 2023-11-01 .. 2026-11-01 | 752 sessions | universe 50 | horizon medium | strategy TPI + Technical Consensus | risk Balanced
+Capital $10000.00 -> $11415.50 | total +14.15% | CAGR +4.52% | Sharpe 0.87 | Sortino 1.43 | max DD 4.47% | Calmar 1.01
+Vol 5.24% | exposure 90% | trades 55 (win 38.2%, PF 1.56, avg win +13.27%, avg loss -3.61%, avg trade +2.84%) | fees $3.71
+Rules: Long-only, one position; signals at close, fills at next open; 2.0 bps spread, 5.0 bps slippage, 0.0 bps commission; adjusted daily bars; ATR trailing stop 2.5x; max hold 20 sessions
+
+Six-month windows (continuous portfolio):
+  WINDOW                       RETURN       SPY       QQQ    MAX DD  TRADES    WIN%
+  2023-11-01 .. 2024-05-01      7.47%    19.17%    18.44%     1.95%       6    83.3
+  2024-05-01 .. 2024-11-01      0.17%    14.41%    15.13%     2.02%       8    50.0
+  2024-11-01 .. 2025-05-01     -1.55%    -1.14%    -0.25%     3.99%      10    20.0
+  2025-05-01 .. 2025-11-01      6.97%    23.81%    32.71%     2.48%       9    55.6
+  2025-11-01 .. 2026-05-01      2.01%     6.25%     7.40%     4.47%      10    20.0
+  2026-05-01 .. 2026-11-01     -0.51%     5.66%     3.59%     4.37%      12    25.0
+
+Comparisons over the same period:
+  STRATEGY                FINAL     RETURN     CAGR   SHARPE    MAX DD       VOL
+  TPI portfolio        11415.50     14.15%    4.52%     0.87     4.47%     5.24%
+  SPY                  18667.23     86.67%   23.17%     1.47    18.74%    14.84%
+  QQQ                  19944.79     99.45%   25.92%     1.21    22.72%    20.45%
+  Buy&Hold Universe    19228.27     92.28%   24.39%     1.53    18.96%    14.90%
+  Cash                 10000.00      0.00%    0.00%     0.00     0.00%     0.00%
+
+Relative to benchmarks:
+  SPY: alpha +2.39%/yr | beta 0.10 | corr 0.28 | tracking error 14.26%
+  QQQ: alpha +2.95%/yr | beta 0.07 | corr 0.26 | tracking error 19.76%
+Computed in 32 ms.
+
+Walk-forward (parameters fitted only on past training data):
+  FOLD TRAIN                   TEST                    SELECTED                   IS SHARPE   OOS RET% OOS SHARPE  OOS DD%
+  1    2023-11-01 .. 2024-11-01 2024-11-01 .. 2025-05-01 atr=2.5 rsi_max=75 exit=20       1.76     -2.41%      -1.19     4.50
+  2    2024-05-01 .. 2025-05-01 2025-05-01 .. 2025-11-01 atr=3.0 rsi_max=80 exit=10       0.76     -1.52%      -0.94     2.38
+  3    2024-11-01 .. 2025-11-01 2025-11-01 .. 2026-05-01 atr=3.0 rsi_max=75 exit=20       1.66     -1.64%      -0.79     3.08
+  4    2025-05-01 .. 2026-05-01 2026-05-01 .. 2026-11-01 atr=2.0 rsi_max=75 exit=10       2.38     -0.66%      -0.12     8.11
+
+Untouched OOS: train 2023-11-01 .. 2026-05-01, test 2026-05-01 .. 2026-11-01 | selected atr=2.0 rsi_max=75 exit=10 | IS Sharpe 1.70 | OOS return -0.66% | OOS Sharpe -0.12 | OOS DD 8.11% | OOS trades 13
+
+Parameter stability across six-month windows (top 10):
+  PARAMS                              MEAN%     STDEV%     WORST%      BEST%  POS/ALL
+  atr=2.0 rsi_max=80 exit=10          4.83%      5.09%     -0.43%     11.03%    5/6  
+  atr=2.0 rsi_max=75 exit=10          4.63%      4.91%      0.26%     12.70%    6/6  
+  atr=2.0 rsi_max=80 exit=20          4.30%      5.16%     -0.43%     11.03%    5/6  
+  atr=3.0 rsi_max=75 exit=10          3.20%      3.43%     -2.14%      6.44%    5/6  
+  atr=2.0 rsi_max=75 exit=20          2.75%      3.15%      0.26%      7.60%    6/6  
+  atr=2.5 rsi_max=80 exit=20          2.79%      3.42%     -0.71%      8.23%    4/6  
+  atr=2.5 rsi_max=75 exit=10          2.11%      2.82%     -0.51%      7.47%    5/6  
+  atr=2.5 rsi_max=80 exit=10          2.31%      3.33%     -1.81%      6.97%    4/6  
+  atr=2.5 rsi_max=70 exit=10          2.71%      4.73%     -3.04%      8.69%    4/6  
+  atr=3.0 rsi_max=80 exit=10          1.44%      2.78%     -2.27%      5.54%    4/6  
+NOTE: Walk-forward, stability and OOS were computed for the TPI leg only
+Benchmark finished in 370 ms.
+Exported 14 files to reports

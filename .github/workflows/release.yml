@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to publish (for example v0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Install Linux TLS prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Package Windows zip
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tag = $env:RELEASE_TAG
+          $stage = "dist/stage"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item "target/release/tpi-rs.exe" $stage
+          Copy-Item README.md, LICENSE, .env.example $stage
+          Copy-Item config $stage -Recurse
+          $asset = "dist/tpi-rs-$tag-x86_64-pc-windows-msvc.zip"
+          Compress-Archive -Path "$stage/*" -DestinationPath $asset
+          $hash = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLower()
+          "$hash  $(Split-Path $asset -Leaf)" | Out-File "$asset.sha256" -Encoding ascii
+          Get-ChildItem dist | Format-Table Name, Length
+
+      - name: Package Linux tarball
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="$RELEASE_TAG"
+          stage="dist/stage"
+          mkdir -p "$stage"
+          cp target/release/tpi-rs "$stage/"
+          cp README.md LICENSE .env.example "$stage/"
+          cp -r config "$stage/"
+          asset="dist/tpi-rs-$tag-x86_64-unknown-linux-gnu.tar.gz"
+          tar -czf "$asset" -C "$stage" .
+          sha256sum "$asset" > "$asset.sha256"
+          ls -lh dist
+
+      - name: Upload packaged files
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: TPI-RS ${{ env.RELEASE_TAG }}
+          draft: false
+          prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: dist/*
+          body: |
+            Prebuilt TPI-RS binaries for `${{ env.RELEASE_TAG }}`.
+
+            **Windows 10/11 x64**
+            1. Download `tpi-rs-${{ env.RELEASE_TAG }}-x86_64-pc-windows-msvc.zip`.
+            2. Extract it.
+            3. Open PowerShell in the extracted folder and run `.\tpi-rs.exe --doctor`, then `.\tpi-rs.exe`.
+
+            **Linux x64**
+            1. Download `tpi-rs-${{ env.RELEASE_TAG }}-x86_64-unknown-linux-gnu.tar.gz`.
+            2. Extract it, then run `./tpi-rs --doctor` and `./tpi-rs`.
+            3. The Linux build uses the system OpenSSL (`libssl3` on most distributions).
+
+            No Rust toolchain is needed. The archives include `config/default.toml`, `.env.example`, the README and the license.
+
+            For a no-network demo, run `tpi-rs --offline --tickers AAPL,MSFT --mode scan`.
+
+            Verify the download with the matching `.sha256` file before running it.
+
+            This is research software, not investment advice. Paper trading is the default. Live trading requires explicit configuration and typed confirmation.

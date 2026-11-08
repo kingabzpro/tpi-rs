@@ -1,0 +1,68 @@
+[package]
+name = "tpi-rs"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Lightweight, deterministic Rust trading system: TPI trend/breakout strategy, ratings, backtests and Alpaca execution"
+license = "MIT"
+publish = false
+default-run = "tpi-rs"
+repository = "https://github.com/kingabzpro/tpi-rs"
+homepage = "https://github.com/kingabzpro/tpi-rs"
+readme = "README.md"
+keywords = ["trading", "backtesting", "alpaca", "technical-analysis", "rust"]
+categories = ["command-line-utilities", "finance"]
+
+[lib]
+name = "tpi_rs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tpi-rs"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive", "env"] }
+crossterm = "0.29"
+csv = "1"
+dialoguer = "0.12"
+dotenvy = "0.15"
+futures = "0.3"
+ratatui = "0.30"
+rayon = "1"
+reqwest = { version = "0.13", default-features = false, features = ["json", "native-tls", "gzip", "http2", "query"] }
+rusqlite = { version = "0.41", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ta = "0.5"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "signal", "fs"] }
+toml = "1.2.1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_Security"] }
+
+[dev-dependencies]
+criterion = "0.8"
+proptest = "1"
+tempfile = "3"
+tokio-test = "0.4"
+
+[[bench]]
+name = "indicators"
+harness = false
+
+[[bench]]
+name = "backtest"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-11-08T11:39:59.590226+00:00",
+  "symbols": 100,
+  "history_days": 1105,
+  "rayon_threads": 16,
+  "indicator_parallel_ms": 15.871799999999999,
+  "indicator_parallel_symbols_per_sec": 6300.48261696846,
+  "indicator_bars_per_sec": 6962033.291750149,
+  "indicator_single_thread_ms": 25.2841,
+  "scan_mean_ms": 0.049995,
+  "scan_p50_ms": 0.0457,
+  "scan_p95_ms": 0.10189999999999999,
+  "scan_symbols_per_sec": 2000200.0200020003,
+  "backtest_ms": 32.9321,
+  "backtest_symbol_days_per_sec": 1188809.70238764,
+  "working_set_mb": 98.203125,
+  "peak_working_set_mb": 98.203125,
+  "cpu_seconds": 0.203125,
+  "wall_seconds": 0.1423075,
+  "cpu_percent": 142.73667937389106,
+  "binary_mb": 5.9189453125,
+  "json_path": "reports\\perf-20261108-113959.json"
+}

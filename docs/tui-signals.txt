@@ -1,0 +1,42 @@
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ TPI-RS  Scan | medium | TPI | risk Balanced | $10000 | SYNTHETIC DEMO                                                                              │
+│status: scan complete: 5 signals, 0 errors in 2 ms                                                                                                  │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+ Signals │ Chart │ Rating │ Portfolio │ Backtest │ Horizons │ Help
+┌ Signals (5) sort: action asc ─────────────────────────────────────────────────────────────┐┌ Detail ───────────────────────────────────────────────┐
+│  SYMBOL  STRAT  ACTION  STR  RATING      CLOSE    RSI  ATR%  STOP                         ││MSFT HOLD  strength 78/100                             │
+│> MSFT    TPI    HOLD    78   Strong Buy  30.12    56   3.2   27.72                        ││Strong Buy | TPI | as of 2026-11-06                    │
+│  AAPL    TPI    HOLD    66   Strong Buy  269.29   59   5.3   233.57                       ││Close 30.12 | EMA50 29.28 | EMA200 27.64               │
+│  META    TPI    SELL    100  Strong Sell 36.52    27   4.6   32.32                        ││RSI 56.3 | ATR 3.19% | ADX 18.0 | vol 0.92x            │
+│  NVDA    TPI    SELL    100  Strong Sell 268.58   35   3.6   244.36                       ││Entry 30.12 | Stop 27.72 (7.98%) | Target 34.92        │
+│  AMZN    TPI    SELL    97   Strong Sell 296.37   34   2.2   280.21                       ││Score 78 = 35 trend + 10 breakout + 20 momentum + 3    │
+│                                                                                           ││confirm + 10 vol                                       │
+│                                                                                           ││Panel: 20 buy / 4 neutral / 2 sell                     │
+│                                                                                           ││                                                       │
+│                                                                                           ││Why:                                                   │
+│                                                                                           ││- Trend: close 30.12 vs EMA50 29.28 / EMA200 27.64;    │
+│                                                                                           ││EMA50 slope +0.24% over 10 bars                        │
+│                                                                                           ││- No breakout: close 30.12 vs prior 20-day high 31.03 /│
+│                                                                                           ││40-day high 31.78                                      │
+│                                                                                           ││- Momentum: RSI14 56.3 (band 50-75); MACD histogram    │
+│                                                                                           ││+0.200                                                 │
+│                                                                                           ││- Confirmation: ADX14 18.0, +DI 19.3 vs -DI 15.7,      │
+│                                                                                           ││volume 0.92x 20-day average                            │
+│                                                                                           ││                                                       │
+│                                                                                           ││Warnings:                                              │
+│                                                                                           ││- No BUY: 20-day breakout and 40-day channel           │
+│                                                                                           ││confirmation required (close 30.12, 40-day mid 29.68)  │
+│                                                                                           ││- Signals describe rule-based conditions, not a        │
+│                                                                                           ││forecast of future prices                              │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+│                                                                                           ││                                                       │
+└───────────────────────────────────────────────────────────────────────────────────────────┘└───────────────────────────────────────────────────────┘
+ q quit   Tab/1-7 tabs   j/k move   s/S sort/direction   Enter chart   Esc cancel   r rerun   b backtest   e export   ? help
+

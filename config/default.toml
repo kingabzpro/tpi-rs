@@ -1,0 +1,130 @@
+# TPI-RS default configuration.
+# Secrets come from .env or the environment, never from this file.
+
+[alpaca]
+data_url = "https://data.alpaca.markets"
+paper_url = "https://paper-api.alpaca.markets"
+live_url = "https://api.alpaca.markets"
+# iex is included in Alpaca's free plan; sip requires a subscription.
+feed = "iex"
+# all embeds splits and dividends into historical prices.
+adjustment = "all"
+rate_limit_per_min = 180
+timeout_secs = 30
+max_retries = 3
+
+[trading]
+# paper must become false in addition to allow_live for live orders.
+paper = true
+allow_live = false
+max_order_notional_pct = 25.0
+max_daily_loss_pct = 3.0
+max_trades_per_day = 4
+max_open_positions = 1
+allow_fractional = true
+min_order_notional = 10.0
+fill_timeout_secs = 30
+poll_secs = 2
+loop_interval_secs = 300
+flatten_on_exit = false
+max_single_order_notional = 10000.0
+kill_switch_file = "KILL"
+
+[strategy]
+require_rating_buy = true
+risk_free_rate_pct = 0.0
+long_only = true
+volume_ratio_min = 1.0
+min_history_bars = 220
+
+[strategy.short]
+breakout_period = 20
+confirm_period = 40
+exit_period = 10
+atr_stop_mult = 2.0
+max_hold_days = 5
+rsi_min = 50.0
+rsi_max = 78.0
+buy_threshold = 62.0
+min_atr_pct = 0.8
+max_atr_pct = 7.0
+
+[strategy.medium]
+breakout_period = 20
+confirm_period = 40
+exit_period = 20
+atr_stop_mult = 2.5
+max_hold_days = 20
+rsi_min = 50.0
+rsi_max = 75.0
+buy_threshold = 68.0
+min_atr_pct = 0.6
+max_atr_pct = 8.0
+
+[strategy.long]
+breakout_period = 40
+confirm_period = 40
+exit_period = 20
+atr_stop_mult = 3.5
+max_hold_days = 126
+rsi_min = 50.0
+rsi_max = 75.0
+buy_threshold = 72.0
+min_atr_pct = 0.5
+max_atr_pct = 9.0
+
+[backtest]
+initial_capital = 10000.0
+start = "2023-11-01"
+end = "2026-11-01"
+benchmark_symbols = ["SPY", "QQQ"]
+commission_bps = 0.0
+spread_bps = 2.0
+slippage_bps = 5.0
+sec_fee_bps = 0.3
+finra_taf_per_share = 0.000166
+warmup_trading_days = 220
+allow_fractional = true
+stale_bar_days = 5
+# max_hold_days_override = 20
+universe = [
+  "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "AVGO", "BRK.B", "JPM",
+  "V", "MA", "UNH", "XOM", "JNJ", "WMT", "PG", "HD", "COST", "MRK",
+  "ABBV", "CVX", "PEP", "KO", "ADBE", "CRM", "NFLX", "AMD", "INTC", "CSCO",
+  "ORCL", "QCOM", "TXN", "IBM", "CAT", "BA", "GE", "DIS", "MCD", "NKE",
+  "VZ", "T", "PFE", "LLY", "TMO", "ABT", "DHR", "WFC", "BAC", "GS",
+]
+
+[backtest.walk_forward]
+train_months = 12
+test_months = 6
+min_trades_for_selection = 2
+atr_mult_grid = [2.0, 2.5, 3.0]
+rsi_max_grid = [70.0, 75.0, 80.0]
+exit_period_grid = [10, 20]
+oos_months = 6
+
+[cache]
+enabled = true
+path = "data/tpi_cache.db"
+ttl_hours = 12
+refresh = false
+
+[paths]
+reports_dir = "reports"
+logs_dir = "logs"
+
+[profiles.swing]
+mode = "analyze"
+horizon = "short"
+strategy = "tpi"
+risk = "balanced"
+capital = 10000.0
+tickers = ["AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL"]
+
+[profiles.conservative]
+mode = "backtest"
+horizon = "long"
+strategy = "consensus"
+risk = "conservative"
+capital = 10000.0
