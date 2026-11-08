@@ -138,6 +138,22 @@ If a change fails these, it does not go into the default configuration.
 - Clenow, A. (2013). *Following the Trend*. Wiley. Diversified trend-following portfolio construction.
 - TradingView. *Technical Ratings*. [Methodology overview](https://www.tradingview.com/support/solutions/43000502040-technical-ratings/)
 
+## Tested and rejected: native ridge forecast gate
+
+Before adding a larger model, I tested a dependency-free ridge regression on engineered features. It predicted the forward return matching each horizon, was retrained every 21 calendar days on expanding history, and rejected a BUY when the prediction was zero or negative.
+
+The setup was causal. Training rows were included only when the target date was on or before the prediction date. The data was the same real Alpaca IEX adjusted set used in [BENCHMARKS.md](BENCHMARKS.md), 2023-11-01 to 2026-11-01, 50-stock universe.
+
+| Horizon | Baseline return | Gated return | Baseline Sharpe | Gated Sharpe | Baseline max DD | Gated max DD | Baseline trades | Gated trades |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Short | +9.73% | +8.67% | 0.56 | 0.51 | 5.55% | 5.46% | 150 | 147 |
+| Medium | +9.13% | +6.21% | 0.65 | 0.45 | 5.15% | 7.14% | 54 | 57 |
+| Long | +0.05% | +0.05% | 0.02 | 0.02 | 8.09% | 8.09% | 27 | 27 |
+
+The gate rejected about 9% of short and medium BUY signals. Those rejected trades were not worse than the accepted ones on average. The medium drawdown increased. The long model predicted positive returns for every signal, so it never acted as a filter.
+
+**Decision:** rejected. The branch was deleted, the experiment module and binary were removed, no dependencies were added, and no model weights were stored. The idea is worth revisiting only with better features, a longer point-in-time dataset and a different validation design. A small model that mostly repeats momentum already present in TPI does not add value.
+
 ## Current status
 
 None of the strategy changes above are implemented in the default configuration yet. The published benchmark is the honest baseline: TPI +9.13%, TPI + Consensus +14.15%, SPY +86.67% over 2023-11-01 to 2026-11-01, with negative walk-forward OOS folds. See [BENCHMARKS.md](BENCHMARKS.md) for the full tables.
