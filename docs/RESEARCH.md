@@ -154,6 +154,24 @@ The gate rejected about 9% of short and medium BUY signals. Those rejected trade
 
 **Decision:** rejected. The branch was deleted, the experiment module and binary were removed, no dependencies were added, and no model weights were stored. The idea is worth revisiting only with better features, a longer point-in-time dataset and a different validation design. A small model that mostly repeats momentum already present in TPI does not add value.
 
+## Tested and rejected: multi-position breadth
+
+The next experiment changed only portfolio breadth, not the signal or exit rules. The baseline held one position at 1.0% equity risk. The breadth arms held three or five positions with smaller risk per slot and a 75% gross exposure cap.
+
+| Horizon | 1 position return / Sharpe / max DD | 3 positions | 5 positions |
+|---|---|---|---|
+| Short | +9.73% / 0.56 / 5.55% | +21.48% / 0.79 / 11.44% | +25.12% / 0.97 / 10.04% |
+| Medium | +9.13% / 0.65 / 5.15% | +29.54% / 1.18 / 11.77% | +26.12% / 1.19 / 8.42% |
+| Long | +0.05% / 0.02 / 8.09% | +6.99% / 0.42 / 8.64% | +16.50% / 0.96 / 6.41% |
+
+The five-position medium arm looked strong over the full period, but it failed the pre-declared robustness gate:
+
+- Medium drawdown was 1.63x the baseline, above the 1.5x limit.
+- Short drawdown was 1.81x the baseline.
+- In the first half of the sample, the five-position arm returned +5.23% with Sharpe 0.54 and an 8.42% drawdown, versus +5.91%, Sharpe 0.96 and 3.99% for the baseline. The full-period gain came entirely from the second half.
+
+**Decision:** not merged. The branch was deleted, the multi-position engine changes and experiment example were removed, and no dependencies were added. The next breadth test should use 0.25-0.35% risk per slot or apply breadth only in a confirmed market uptrend, with the first half used for selection and the second half reserved for validation.
+
 ## Current status
 
 None of the strategy changes above are implemented in the default configuration yet. The published benchmark is the honest baseline: TPI +9.13%, TPI + Consensus +14.15%, SPY +86.67% over 2023-11-01 to 2026-11-01, with negative walk-forward OOS folds. See [BENCHMARKS.md](BENCHMARKS.md) for the full tables.
