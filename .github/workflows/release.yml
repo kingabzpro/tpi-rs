@@ -108,7 +108,7 @@ jobs:
             **Windows 10/11 x64**
             1. Download `tpi-${{ env.RELEASE_TAG }}-x86_64-pc-windows-msvc.zip`.
             2. Extract it.
-            3. Open PowerShell in the extracted folder and run `.\tpi.exe --doctor`, then `.\tpi.exe`.
+            3. Open PowerShell in the extracted folder and run `.\tpi.exe doctor`, then `.\tpi.exe`.
 
             **Linux x64**
             1. Download `tpi-${{ env.RELEASE_TAG }}-x86_64-unknown-linux-gnu.tar.gz`.
