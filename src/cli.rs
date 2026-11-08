@@ -369,7 +369,7 @@ pub fn resolve(cli: &Cli, cfg: &Config) -> Result<Selection> {
             .map_err(prompt_err)?;
 
         let horizon_items = [
-            "Short (1-5 trading days)",
+            "Short-term (1-5 day setup, trend exit)",
             "Medium (1-4 weeks)",
             "Long (1-6 months)",
         ];

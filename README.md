@@ -45,7 +45,7 @@ Every release includes a SHA-256 checksum. The zip or tarball contains the execu
 
 ```powershell
 # After extracting the release zip
-cd .\tpi-v0.1.1-x86_64-pc-windows-msvc
+cd .\tpi-v0.1.2-x86_64-pc-windows-msvc
 Copy-Item .env.example .env      # optional, for Alpaca market data
 notepad .env                    # add your paper API key and secret
 .\tpi.exe --doctor           # with keys
@@ -62,8 +62,8 @@ If you only want to see it work, offline mode needs no keys and no network:
 ### Linux
 
 ```bash
-tar -xzf tpi-v0.1.1-x86_64-unknown-linux-gnu.tar.gz
-cd tpi-v0.1.1-x86_64-unknown-linux-gnu
+tar -xzf tpi-v0.1.2-x86_64-unknown-linux-gnu.tar.gz
+cd tpi-v0.1.2-x86_64-unknown-linux-gnu
 cp .env.example .env
 ./tpi doctor            # with keys
 ./tpi doctor --offline  # without keys
@@ -90,7 +90,7 @@ The script is short and readable. Review it before running it.
 |---|---|
 | Strategy | Donchian 40/20 channels, EMA 50/200 trend, RSI 14, ATR 14, ADX and volume confirmation, ATR trailing stop |
 | Ratings | 26-vote panel with Strong Sell, Sell, Neutral, Buy, Strong Buy |
-| Horizons | Separate short (1-5 days), medium (1-4 weeks) and long (1-6 months) parameter sets |
+| Horizons | Separate short (1-5 day setup, trend exit), medium (1-4 weeks) and long (1-6 months) parameter sets |
 | Scanning | Single ticker, explicit list, or Top-100 most-active US equities, fetched concurrently |
 | Backtesting | Next-session fills, spread, slippage, commissions, SEC/TAF fees, six-month windows |
 | Validation | Walk-forward selection, parameter stability, untouched out-of-sample holdout |
