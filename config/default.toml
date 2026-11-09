@@ -19,7 +19,9 @@ paper = true
 allow_live = false
 max_order_notional_pct = 25.0
 max_daily_loss_pct = 3.0
-max_trades_per_day = 4
+max_trades_per_day = 50
+# Daily traded notional ceiling as a percentage of equity.
+max_daily_notional_pct = 100.0
 max_open_positions = 1
 allow_fractional = true
 min_order_notional = 10.0

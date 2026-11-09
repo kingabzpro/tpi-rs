@@ -262,22 +262,9 @@ pub(crate) async fn run_session(
 
         if can_enter {
             let today = Utc::now().date_naive();
-            let trades_today = recent_orders
-                .iter()
-                .filter(|o| {
-                    o.submitted_at
-                        .map(|t| t.date_naive() == today)
-                        .unwrap_or(false)
-                })
-                .count();
-            if trades_today >= cfg.trading.max_trades_per_day as usize {
-                println!(
-                    "{}",
-                    ansi::yellow(&format!(
-                        "RISK: {} orders already submitted today (limit {}); no new entry.",
-                        trades_today, cfg.trading.max_trades_per_day
-                    ))
-                );
+            let (orders_today, notional_today) = daily_usage(&recent_orders, today);
+            if let Some(reason) = daily_gate(orders_today, notional_today, cfg, account.equity) {
+                println!("{}", ansi::yellow(&format!("RISK: {reason}")));
             } else if let Some(best) = analysis.strongest() {
                 if active_positions.iter().any(|p| p.symbol == best.symbol) {
                     println!(
@@ -469,6 +456,44 @@ async fn submit_and_report(
         );
     }
     Ok(Some(order))
+}
+
+/// Orders the account already sent today. The entry gate uses both the count and
+/// the notional, because dust cleanups can use up a count-only allowance.
+fn daily_usage(orders: &[Order], today: chrono::NaiveDate) -> (usize, f64) {
+    let today_orders: Vec<&Order> = orders
+        .iter()
+        .filter(|o| {
+            o.submitted_at
+                .map(|t| t.date_naive() == today)
+                .unwrap_or(false)
+        })
+        .collect();
+    let notional = today_orders
+        .iter()
+        .map(|o| {
+            let filled = o.filled_qty * o.filled_avg_price.unwrap_or(0.0);
+            o.notional.unwrap_or(0.0).max(filled).max(0.0)
+        })
+        .sum();
+    (today_orders.len(), notional)
+}
+
+/// `None` when a new entry fits the daily budget, otherwise the reason it does not.
+fn daily_gate(count: usize, notional: f64, cfg: &Config, equity: f64) -> Option<String> {
+    let max_orders = cfg.trading.max_trades_per_day as usize;
+    if count >= max_orders {
+        return Some(format!(
+            "{count} orders already submitted today (limit {max_orders}); no new entry."
+        ));
+    }
+    let cap = equity.max(0.0) * (cfg.trading.max_daily_notional_pct / 100.0);
+    if cap > 0.0 && notional >= cap {
+        return Some(format!(
+            "${notional:.2} traded today (limit ${cap:.2}); no new entry."
+        ));
+    }
+    None
 }
 
 /// Fractional and dust quantities are real, so keep precision where it matters.
@@ -667,5 +692,40 @@ pub fn mode_label(mode: Mode) -> &'static str {
         Mode::Paper => "paper",
         Mode::Live => "live",
         _ => "analysis",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cfg_with(max_orders: u32, notional_pct: f64) -> Config {
+        let mut cfg = Config::default();
+        cfg.trading.max_trades_per_day = max_orders;
+        cfg.trading.max_daily_notional_pct = notional_pct;
+        cfg
+    }
+
+    #[test]
+    fn dust_orders_do_not_consume_the_entry_budget() {
+        let cfg = cfg_with(50, 100.0);
+        // The six dust sells that used to block every entry.
+        assert_eq!(daily_gate(6, 0.000_189, &cfg, 96_642.33), None);
+    }
+
+    #[test]
+    fn entry_is_blocked_when_the_order_count_is_reached() {
+        let cfg = cfg_with(4, 100.0);
+        let reason = daily_gate(4, 0.0, &cfg, 10_000.0).expect("blocked");
+        assert!(reason.contains("limit 4"), "{reason}");
+    }
+
+    #[test]
+    fn entry_is_blocked_when_the_notional_ceiling_is_reached() {
+        let cfg = cfg_with(50, 100.0);
+        let reason = daily_gate(2, 10_000.0, &cfg, 10_000.0).expect("blocked");
+        assert!(reason.contains("traded today"), "{reason}");
+        // Half the ceiling still trades.
+        assert_eq!(daily_gate(2, 5_000.0, &cfg, 10_000.0), None);
     }
 }

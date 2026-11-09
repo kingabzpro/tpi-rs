@@ -6,6 +6,9 @@ All notable changes to TPI-RS are recorded here. The project follows semantic ve
 
 ### Changed
 
+- The daily entry budget now caps traded notional as well as order count: `max_trades_per_day` is 50 and the new `max_daily_notional_pct` caps a day at 100% of equity. Six dust sells worth $0.000189 previously exhausted the old 4-order allowance and blocked every entry for the rest of the day.
+- Live trading raises its order ceiling from 20 to 50 per day to match the new default, and now also refuses a `max_daily_notional_pct` above 100.
+
 - Paper and live console output is colourised when stdout is a terminal, and stays plain when piped or when `NO_COLOR` is set.
 - The paper loop prints a holdings table with per-position entry, current price, value and unrealised P&L, and lists orders submitted today so fills are visible without leaving the console.
 

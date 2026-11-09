@@ -82,6 +82,9 @@ pub struct TradingConfig {
     pub max_order_notional_pct: f64,
     pub max_daily_loss_pct: f64,
     pub max_trades_per_day: u32,
+    /// Daily traded notional ceiling as a percentage of equity. Blocks new entries
+    /// once the day's orders add up to it, so dust orders cannot consume the allowance.
+    pub max_daily_notional_pct: f64,
     pub max_open_positions: usize,
     pub allow_fractional: bool,
     pub min_order_notional: f64,
@@ -101,7 +104,8 @@ impl Default for TradingConfig {
             allow_live: false,
             max_order_notional_pct: 25.0,
             max_daily_loss_pct: 3.0,
-            max_trades_per_day: 4,
+            max_trades_per_day: 50,
+            max_daily_notional_pct: 100.0,
             max_open_positions: 1,
             allow_fractional: true,
             min_order_notional: 10.0,
@@ -427,6 +431,11 @@ impl Config {
         }
         if self.trading.max_open_positions == 0 {
             return Err(Error::config("trading.max_open_positions must be > 0"));
+        }
+        if self.trading.max_daily_notional_pct <= 0.0
+            || !self.trading.max_daily_notional_pct.is_finite()
+        {
+            return Err(Error::config("trading.max_daily_notional_pct must be > 0"));
         }
         if !(0.0..=100.0).contains(&self.trading.max_daily_loss_pct) {
             return Err(Error::config("trading.max_daily_loss_pct must be 0..=100"));

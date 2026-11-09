@@ -89,9 +89,14 @@ fn preflight(cfg: &Config, options: &TradeOptions) -> Result<()> {
             "max_open_positions above 5 is not allowed for live trading".to_string(),
         ));
     }
-    if cfg.trading.max_trades_per_day > 20 {
+    if cfg.trading.max_trades_per_day > 50 {
         return Err(Error::LiveTradingRefused(
-            "max_trades_per_day above 20 is not allowed for live trading".to_string(),
+            "max_trades_per_day above 50 is not allowed for live trading".to_string(),
+        ));
+    }
+    if cfg.trading.max_daily_notional_pct > 100.0 {
+        return Err(Error::LiveTradingRefused(
+            "max_daily_notional_pct above 100 is not allowed for live trading".to_string(),
         ));
     }
     if !std::io::stdin().is_terminal() {

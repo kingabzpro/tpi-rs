@@ -4,7 +4,7 @@
 
 **Super fast algorithmic trading for US stocks, built entirely in Rust.**
 
-[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-71%20passing-brightgreen)
+[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-74%20passing-brightgreen)
 
 </div>
 
@@ -106,7 +106,7 @@ Dashboard keys: `1-8` switch tabs, `j/k` move, `s/S` sort, `R` cycles the risk p
 
 ## Automate paper trading
 
-`tpi paper` already does what an "auto" mode would: it discovers the Top 100 most-active US stocks, scores them, manages exits, and holds one position at a time (`max_open_positions = 1`), refusing entries past `max_trades_per_day`, the daily loss limit or the kill switch.
+`tpi paper` already does what an "auto" mode would: it discovers the Top 100 most-active US stocks, scores them, manages exits, and holds one position at a time (`max_open_positions = 1`). Entries stop at the daily budget, which caps both the number of orders (`max_trades_per_day`, 50) and the traded notional (`max_daily_notional_pct`, 100% of equity), so a handful of dust cleanups cannot use up the day. The daily loss limit and the kill switch apply on top.
 
 ```powershell
 .\tpi.exe paper --top 100 --loop-secs 300     # one cycle every 5 minutes, until Ctrl-C
