@@ -18,6 +18,7 @@ pub mod data;
 pub mod error;
 pub mod indicators;
 pub mod live;
+pub mod lockfile;
 pub mod model;
 pub mod paper;
 pub mod perf;
@@ -25,6 +26,7 @@ pub mod perf_harness;
 pub mod report;
 pub mod scan;
 pub mod strategy;
+pub mod tradelog;
 pub mod tui;
 
 pub use error::{Error, Result};

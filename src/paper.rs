@@ -10,8 +10,10 @@ use crate::config::Config;
 use crate::data::alpaca::{AlpacaClient, Order, OrderRequest, Position};
 use crate::data::{MarketData, universe};
 use crate::error::{Error, Result};
+use crate::lockfile::InstanceLock;
 use crate::model::{Action, Horizon, Mode, RiskProfile, StrategyMode};
 use crate::scan::{self, AnalysisOptions};
+use crate::tradelog::TradeLog;
 use chrono::{DateTime, Duration, Utc};
 use std::io::IsTerminal;
 use std::path::PathBuf;
@@ -98,6 +100,13 @@ pub(crate) async fn run_session(
         return Ok(());
     }
 
+    let _lock = InstanceLock::acquire(PathBuf::from(&cfg.paths.logs_dir).join("paper.lock"))?;
+    let log = TradeLog::open(cfg)?;
+    log.append(&format!(
+        "session start: {label} {horizon} {strategy} risk {risk}"
+    ));
+    println!("{}", ansi::dim(&format!("log: {}", log.path().display())));
+
     let clock = client.clock().await?;
     println!(
         "Market {} | now {} | next open {} | next close {}",
@@ -115,8 +124,16 @@ pub(crate) async fn run_session(
     }
 
     let market = MarketData::new(cfg, false, false)?;
+    let retry_delay = TokioDuration::from_secs(30);
     loop {
-        let cycle_clock = client.clock().await?;
+        let cycle_clock = match client.clock().await {
+            Ok(clock) => clock,
+            Err(e) => {
+                log.record(&format!("CYCLE ERROR clock: {e}; retrying in 30s"));
+                sleep(retry_delay).await;
+                continue;
+            }
+        };
         let market_is_open = cycle_clock.is_open;
         let today = cycle_clock.timestamp.date_naive();
         let as_of = if market_is_open {
@@ -124,7 +141,14 @@ pub(crate) async fn run_session(
         } else {
             today
         };
-        let account = client.account().await?;
+        let account = match client.account().await {
+            Ok(account) => account,
+            Err(e) => {
+                log.record(&format!("CYCLE ERROR account: {e}; retrying in 30s"));
+                sleep(retry_delay).await;
+                continue;
+            }
+        };
         if account.account_blocked || account.trading_blocked {
             println!(
                 "Account is blocked (account_blocked={}, trading_blocked={}); no orders.",
@@ -132,10 +156,24 @@ pub(crate) async fn run_session(
             );
             return Ok(());
         }
-        let positions = client.positions().await?;
+        let positions = match client.positions().await {
+            Ok(positions) => positions,
+            Err(e) => {
+                log.record(&format!("CYCLE ERROR positions: {e}; retrying in 30s"));
+                sleep(retry_delay).await;
+                continue;
+            }
+        };
         let active_positions: Vec<&Position> =
             positions.iter().filter(|p| p.qty.abs() >= 1e-6).collect();
-        let open_orders = client.orders("open").await?;
+        let open_orders = match client.orders("open").await {
+            Ok(orders) => orders,
+            Err(e) => {
+                log.record(&format!("CYCLE ERROR open orders: {e}; retrying in 30s"));
+                sleep(retry_delay).await;
+                continue;
+            }
+        };
         // Fail closed: without the order history the daily budget cannot be
         // checked, so entries are blocked instead of assuming a clean day.
         let (recent_orders, history_error) = match client.orders("all").await {
@@ -144,12 +182,10 @@ pub(crate) async fn run_session(
         };
         print_account(label, &account, &positions, &open_orders, &recent_orders);
 
+        // Held symbols are added to the scanned list, never substituted for it.
+        // Substituting made the loop stop looking for new entries as soon as it
+        // held anything, so it only ever saw its own positions.
         let mut symbols = universe::parse_tickers(&options.tickers);
-        for p in &active_positions {
-            if !symbols.contains(&p.symbol) {
-                symbols.push(p.symbol.clone());
-            }
-        }
         if symbols.is_empty() {
             let (resolved, warnings) = universe::resolve_symbols(
                 Some(&client),
@@ -163,6 +199,11 @@ pub(crate) async fn run_session(
                 println!("NOTE: {w}");
             }
             symbols = resolved;
+        }
+        for p in &active_positions {
+            if !symbols.contains(&p.symbol) {
+                symbols.push(p.symbol.clone());
+            }
         }
         let equity = capital_override.unwrap_or(account.equity);
         let analysis = scan::analyze_market(
@@ -184,13 +225,37 @@ pub(crate) async fn run_session(
             },
             None,
         )
-        .await?;
+        .await;
+        let analysis = match analysis {
+            Ok(analysis) => analysis,
+            Err(e) => {
+                log.record(&format!("CYCLE ERROR scan: {e}; retrying in 30s"));
+                sleep(retry_delay).await;
+                continue;
+            }
+        };
         for w in &analysis.warnings {
-            println!("NOTE: {w}");
+            log.append(&format!("NOTE: {w}"));
         }
         if let Some(as_of) = analysis.as_of {
             println!("Signals as of completed session {as_of}");
         }
+        let buys = analysis
+            .signals
+            .iter()
+            .filter(|s| s.action == Action::Buy)
+            .count();
+        let sells = analysis
+            .signals
+            .iter()
+            .filter(|s| s.action == Action::Sell)
+            .count();
+        log.append(&format!(
+            "cycle as_of {as_of}: {} symbols, {buys} buy, {sells} sell, {} holdings, {} open orders",
+            analysis.signals.len(),
+            active_positions.len(),
+            open_orders.len()
+        ));
 
         let dry_run = options.dry_run || !market_is_open;
         if !market_is_open {
@@ -267,6 +332,7 @@ pub(crate) async fn run_session(
                     &req,
                     dry_run,
                     cfg,
+                    &log,
                     &format!("exit {} ({reason})", pos.symbol),
                 )
                 .await?;
@@ -315,6 +381,7 @@ pub(crate) async fn run_session(
                         &order,
                         dry_run,
                         cfg,
+                        &log,
                         &format!("entry {} strength {:.0}", best.symbol, best.strength),
                     )
                     .await?;
@@ -404,24 +471,28 @@ async fn submit_and_report(
     req: &OrderRequest,
     dry_run: bool,
     cfg: &Config,
+    log: &TradeLog,
     description: &str,
 ) -> Result<Option<Order>> {
     if dry_run {
-        println!(
-            "DRY RUN order: {} | {} {} qty={} notional={} cid={}",
-            description,
+        log.record(&format!(
+            "DRY RUN order: {description} | {} {} qty={} notional={} cid={}",
             req.side,
             req.symbol,
             req.qty.clone().unwrap_or_else(|| "-".into()),
             req.notional.clone().unwrap_or_else(|| "-".into()),
             req.client_order_id
-        );
+        ));
         return Ok(None);
     }
-    println!(
-        "Submitting {description} | client_order_id {}",
+    log.record(&format!(
+        "SUBMIT {description} | {} {} qty={} notional={} cid={}",
+        req.side,
+        req.symbol,
+        req.qty.clone().unwrap_or_else(|| "-".into()),
+        req.notional.clone().unwrap_or_else(|| "-".into()),
         req.client_order_id
-    );
+    ));
     let mut order = match client.submit_order(req).await {
         Ok(o) => o,
         Err(Error::Network { source, .. }) => {

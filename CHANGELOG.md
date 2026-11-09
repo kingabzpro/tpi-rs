@@ -4,6 +4,16 @@ All notable changes to TPI-RS are recorded here. The project follows semantic ve
 
 ## [Unreleased]
 
+### Added
+
+- Single-instance lock for the trading loops (`logs/paper.lock`, released on clean exit, treated as stale after 15 minutes so a killed run cannot block forever). Two processes on one account each saw an empty book and both entered, which broke the one-position rule in practice.
+- Append-only trade log (`logs/paper-YYYYMMDD.log`): session start, one line per cycle with symbol and signal counts, every submitted order, and cycle errors.
+
+### Fixed
+
+- The paper loop replaced its scan list with the held symbols once it had a position, so it stopped looking for new entries and only ever saw its own holdings.
+- Transient API errors ended the session. Cycle errors now log and retry after 30 seconds instead of exiting.
+
 ### Changed
 
 - The daily entry budget now caps traded notional as well as order count: `max_trades_per_day` is 50 and the new `max_daily_notional_pct` caps a day at 100% of equity. Six dust sells worth $0.000189 previously exhausted the old 4-order allowance and blocked every entry for the rest of the day.
