@@ -5,6 +5,7 @@
 //! cycle, and order submissions are reconciled by `client_order_id` after an
 //! ambiguous network failure. Live trading is gated in `live`.
 
+use crate::ansi;
 use crate::config::Config;
 use crate::data::alpaca::{AlpacaClient, Order, OrderRequest, Position};
 use crate::data::{MarketData, universe};
@@ -64,7 +65,12 @@ pub(crate) async fn run_session(
     }
     let client = AlpacaClient::new(&cfg.alpaca, paper)?;
     let label = if paper { "PAPER" } else { "LIVE" };
-    println!("TPI-RS {label} trading | {horizon} | {strategy} | risk {risk}");
+    let label_text = if paper {
+        ansi::bold(&ansi::cyan("PAPER"))
+    } else {
+        ansi::bold(&ansi::red("LIVE"))
+    };
+    println!("TPI-RS {label_text} trading | {horizon} | {strategy} | risk {risk}");
 
     if options.flatten {
         let report = client.emergency_flatten().await?;
@@ -95,7 +101,11 @@ pub(crate) async fn run_session(
     let clock = client.clock().await?;
     println!(
         "Market {} | now {} | next open {} | next close {}",
-        if clock.is_open { "OPEN" } else { "CLOSED" },
+        if clock.is_open {
+            ansi::green("OPEN")
+        } else {
+            ansi::dim("CLOSED")
+        },
         clock.timestamp.format("%Y-%m-%d %H:%M UTC"),
         clock.next_open.format("%Y-%m-%d %H:%M UTC"),
         clock.next_close.format("%Y-%m-%d %H:%M UTC")
@@ -126,7 +136,8 @@ pub(crate) async fn run_session(
         let active_positions: Vec<&Position> =
             positions.iter().filter(|p| p.qty.abs() >= 1e-6).collect();
         let open_orders = client.orders("open").await?;
-        print_account(label, &account, &positions, &open_orders);
+        let recent_orders = client.orders("all").await.unwrap_or_default();
+        print_account(label, &account, &positions, &open_orders, &recent_orders);
 
         let mut symbols = universe::parse_tickers(&options.tickers);
         for p in &active_positions {
@@ -250,9 +261,8 @@ pub(crate) async fn run_session(
                 .any(|o| o.side.eq_ignore_ascii_case("buy"));
 
         if can_enter {
-            let today_orders = client.orders("all").await.unwrap_or_default();
             let today = Utc::now().date_naive();
-            let trades_today = today_orders
+            let trades_today = recent_orders
                 .iter()
                 .filter(|o| {
                     o.submitted_at
@@ -262,12 +272,18 @@ pub(crate) async fn run_session(
                 .count();
             if trades_today >= cfg.trading.max_trades_per_day as usize {
                 println!(
-                    "RISK: {} orders already submitted today (limit {}); no new entry.",
-                    trades_today, cfg.trading.max_trades_per_day
+                    "{}",
+                    ansi::yellow(&format!(
+                        "RISK: {} orders already submitted today (limit {}); no new entry.",
+                        trades_today, cfg.trading.max_trades_per_day
+                    ))
                 );
             } else if let Some(best) = analysis.strongest() {
                 if active_positions.iter().any(|p| p.symbol == best.symbol) {
-                    println!("{}: already held; no add-on", best.symbol);
+                    println!(
+                        "{}",
+                        ansi::dim(&format!("{}: already held; no add-on", best.symbol))
+                    );
                 } else if let Some(order) = build_entry_order(cfg, best, &account).await? {
                     submit_and_report(
                         &client,
@@ -279,12 +295,12 @@ pub(crate) async fn run_session(
                     .await?;
                 }
             } else {
-                println!("No qualified BUY candidate this cycle.");
+                println!("{}", ansi::dim("No qualified BUY candidate this cycle."));
             }
         }
 
         if dry_run {
-            println!("DRY RUN: no orders were submitted.");
+            println!("{}", ansi::dim("DRY RUN: no orders were submitted."));
         }
         if options.once || !market_is_open {
             break;
@@ -455,50 +471,160 @@ async fn submit_and_report(
     Ok(Some(order))
 }
 
+/// Fractional and dust quantities are real, so keep precision where it matters.
+fn qty_text(qty: f64) -> String {
+    if qty.abs() >= 1.0 {
+        format!("{qty:.2}")
+    } else if qty.abs() >= 0.01 {
+        format!("{qty:.4}")
+    } else {
+        format!("{qty:.7}")
+    }
+}
+
 fn print_account(
     label: &str,
     account: &crate::data::Account,
     positions: &[Position],
     open_orders: &[Order],
+    recent_orders: &[Order],
 ) {
+    let day_pnl = account.daily_pnl_pct();
+    let equity = format!("${:.2}", account.equity);
+    let cash = format!("${:.2}", account.cash);
+    let buying_power = format!("${:.2}", account.available_cash());
+    let pnl = format!("{day_pnl:+.2}%");
     println!(
-        "\n{label} account {} | status {} | equity ${:.2} | cash ${:.2} | buying power ${:.2} | day P&L {:+.2}% | PDT {} | day trades {}",
+        "\n{} {} | equity {} | cash {} | buying power {} | day P&L {} | PDT {} | day trades {}",
+        ansi::bold(label),
         account.account_number,
-        account.status,
-        account.equity,
-        account.cash,
-        account.available_cash(),
-        account.daily_pnl_pct(),
+        ansi::bold(&equity),
+        cash,
+        buying_power,
+        ansi::signed(day_pnl, &pnl),
         account.pattern_day_trader,
         account.daytrade_count
     );
-    let active = positions.iter().filter(|p| p.qty.abs() >= 1e-6).count();
-    if positions.is_empty() {
-        println!("Positions: none");
-    } else {
+
+    let active: Vec<&Position> = positions.iter().filter(|p| p.qty.abs() >= 1e-6).collect();
+    if active.is_empty() {
         println!(
-            "Positions ({} active, {} dust):",
-            active,
-            positions.len().saturating_sub(active)
+            "{}",
+            ansi::dim("Holdings: none (flat, nothing open right now)")
         );
-        for p in positions {
+    } else {
+        let mut unrealized = 0.0;
+        println!("Holdings ({})", active.len());
+        println!(
+            "  {:<7}{:>10}{:>10}{:>10}{:>11}{:>12}{:>9}",
+            "SYMBOL", "QTY", "ENTRY", "CURRENT", "VALUE", "UNREAL P&L", "PCT"
+        );
+        for p in &active {
+            let current = p.current_price.unwrap_or(0.0);
+            let value = p.market_value.unwrap_or(p.qty * current);
+            let pl = p
+                .unrealized_pl
+                .unwrap_or((current - p.avg_entry_price) * p.qty);
+            let pct = p.unrealized_plpc.unwrap_or(0.0) * 100.0;
+            unrealized += pl;
             println!(
-                "  {} qty {:.4} avg {:.2} current {:.2} value {:.2} unrealized {:.2}",
+                "  {:<7}{:>10}{:>10.2}{:>10.2}{:>11.2}{:>12}{:>9}",
                 p.symbol,
-                p.qty,
+                qty_text(p.qty),
                 p.avg_entry_price,
-                p.current_price.unwrap_or(0.0),
-                p.market_value.unwrap_or(0.0),
-                p.unrealized_pl.unwrap_or(0.0)
+                current,
+                value,
+                ansi::signed(pl, &format!("{pl:+.2}")),
+                ansi::signed(pl, &format!("{pct:+.1}%"))
+            );
+        }
+        println!(
+            "  {:<7}{:>10}{:>10}{:>10}{:>11}{:>12}",
+            "",
+            "",
+            "",
+            "",
+            ansi::dim("total"),
+            ansi::signed(unrealized, &format!("{unrealized:+.2}"))
+        );
+    }
+
+    let today = Utc::now().date_naive();
+    let mut ordered: Vec<&Order> = recent_orders.iter().collect();
+    ordered.sort_by_key(|o| std::cmp::Reverse(o.submitted_at));
+    let mut shown: Vec<&Order> = ordered
+        .iter()
+        .copied()
+        .filter(|o| {
+            o.submitted_at
+                .map(|t| t.date_naive() == today)
+                .unwrap_or(false)
+        })
+        .collect();
+    let heading = "Orders today";
+    let shown_heading = if shown.is_empty() {
+        shown = ordered.iter().copied().take(3).collect();
+        "Last orders"
+    } else {
+        heading
+    };
+    if shown.is_empty() {
+        println!("{}", ansi::dim("Orders: none"));
+    } else {
+        println!("{shown_heading} ({})", shown.len());
+        for o in &shown {
+            let when = o
+                .submitted_at
+                .map(|t| t.format("%m-%d %H:%M").to_string())
+                .unwrap_or_else(|| "--".to_string());
+            let size = if o.qty.unwrap_or(0.0) > 0.0 {
+                format!("qty {}", qty_text(o.qty.unwrap_or(0.0)))
+            } else if let Some(notional) = o.notional {
+                format!("$ {notional:.2}")
+            } else {
+                "-".to_string()
+            };
+            let fill = if o.filled_qty > 0.0 {
+                format!(
+                    "filled {} @ {}",
+                    qty_text(o.filled_qty),
+                    o.filled_avg_price
+                        .map(|p| format!("{p:.2}"))
+                        .unwrap_or_else(|| "-".to_string())
+                )
+            } else {
+                "unfilled".to_string()
+            };
+            let side = if o.side.eq_ignore_ascii_case("buy") {
+                ansi::green("BUY ")
+            } else {
+                ansi::red("SELL")
+            };
+            println!(
+                "  {} {} {:<7} {:>12} {} {}",
+                when,
+                side,
+                o.symbol,
+                size,
+                fill,
+                ansi::dim(&o.status)
             );
         }
     }
+
     if !open_orders.is_empty() {
-        println!("Open orders:");
+        println!("Open orders ({})", open_orders.len());
         for o in open_orders {
             println!(
-                "  {} {} {} qty {:?} filled {:.4} status {}",
-                o.id, o.side, o.symbol, o.qty, o.filled_qty, o.status
+                "  {} {} {} qty {} filled {:.4} status {}",
+                o.id,
+                o.side,
+                o.symbol,
+                o.qty
+                    .map(|q| format!("{q:.2}"))
+                    .unwrap_or_else(|| "-".to_string()),
+                o.filled_qty,
+                o.status
             );
         }
     }

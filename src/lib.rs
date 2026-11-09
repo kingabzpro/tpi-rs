@@ -10,6 +10,7 @@
 //! - `tui`: terminal dashboard
 //! - `report`: human, CSV and JSON output
 
+pub mod ansi;
 pub mod backtest;
 pub mod cli;
 pub mod config;

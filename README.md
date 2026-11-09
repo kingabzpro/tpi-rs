@@ -4,7 +4,7 @@
 
 **Super fast algorithmic trading for US stocks, built entirely in Rust.**
 
-[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-69%20passing-brightgreen)
+[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-71%20passing-brightgreen)
 
 </div>
 
@@ -65,6 +65,26 @@ The release includes the Windows zip and a matching `.sha256` file. The zip cont
 `--offline` generates deterministic demo bars. It does not read the cache, so drop it to get real prices.
 
 For Alpaca data, copy `.env.example` to `.env`, add your paper keys, then run `.\tpi.exe doctor`. The Windows installer verifies the checksum and installs to `%LOCALAPPDATA%\TPI-RS`: [scripts/install-windows.ps1](scripts/install-windows.ps1).
+
+## Build from source
+
+Needs Rust 1.88 or newer (edition 2024). Windows uses the MSVC toolchain; Linux needs the OpenSSL headers (`pkg-config libssl-dev` on Debian and Ubuntu).
+
+```powershell
+git clone https://github.com/kingabzpro/tpi-rs
+cd tpi-rs
+cargo build --release
+.\target\release\tpi.exe --version
+```
+
+`cargo run --release --` runs it without a separate build step:
+
+```powershell
+cargo run --release -- run AAPL,MSFT --offline
+cargo run --release -- tui
+```
+
+`cargo test` runs the suite. It uses synthetic bars and a local mock Alpaca server, so it needs no keys and no network.
 
 ## Commands
 

@@ -2,6 +2,13 @@
 
 All notable changes to TPI-RS are recorded here. The project follows semantic versioning.
 
+## [Unreleased]
+
+### Changed
+
+- Paper and live console output is colourised when stdout is a terminal, and stays plain when piped or when `NO_COLOR` is set.
+- The paper loop prints a holdings table with per-position entry, current price, value and unrealised P&L, and lists orders submitted today so fills are visible without leaving the console.
+
 ## [0.2.0] - 2026-11-09
 
 ### Added
