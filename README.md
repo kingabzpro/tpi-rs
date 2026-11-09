@@ -30,7 +30,7 @@ TPI-RS is a Windows-native algorithmic trading system for US stocks. It scans fo
 | Equal-weight universe | $19,228 | +92.28% | 24.39% | 1.53 | 2.29 | 18.96% | 14.90% | 1.29 |
 | Cash | $10,000 | 0.00% | 0.00% | 0.00 | 0.00 | 0.00% | 0.00% | 0.00 |
 
-Read it straight. Over this window the strategy lost to buy-and-hold and its worst drawdown was about a third of SPY's, because it sat in cash most of the time: a 1% risk budget against a 2.5 ATR stop keeps only about 17.6% of equity deployed on average. The low drawdown is real. The outperformance is not. Four walk-forward folds and an untouched holdout were all negative, and no sizing change fixed it: volatility targeting and higher fixed risk both moved return and drawdown together and left Sharpe at 0.64. Full numbers, windows and walk-forward: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+Read it straight. Over this window the strategy lost to buy-and-hold and its worst drawdown was about a third of SPY's, because it sat in cash most of the time: a 1% risk budget against a 2.5 ATR stop keeps only about 17.6% of equity deployed on average. The low drawdown is real. The outperformance is not, and more risk did not fix it: volatility targeting and higher fixed risk both moved return and drawdown together and left Sharpe at 0.64. Full tables, windows and walk-forward: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ## Speed and memory
 
@@ -45,11 +45,11 @@ Read it straight. Over this window the strategy lost to buy-and-hold and its wor
 | Windows binary | 6 MB |
 | Repeatable scans | six concurrent scans byte-identical |
 
-The hot path is a precomputed causal series per symbol, a Rayon scan over the universe, and a single reuse of that series across every backtest day and parameter set. There is no garbage collector, interpreter or model inference in the loop. Full numbers: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+The hot path is a precomputed causal series per symbol, a Rayon scan over the universe, and a single reuse of that series across every backtest day and parameter set. There is no garbage collector, interpreter or model inference in the loop. Measured with `tpi perf`, which uses deterministic synthetic bars.
 
 ## Run it on Windows
 
-No Rust, Cargo, Python or build tools required.
+No Rust or Cargo required.
 
 [![Download for Windows](https://img.shields.io/badge/download-Windows%2010%2F11-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest)
 
@@ -88,7 +88,7 @@ Every prompt has an equivalent flag, so scripts never need to answer questions. 
 - [Changelog](CHANGELOG.md)
 
 > [!WARNING]
-> This is research software, not investment advice. SPY's total return was higher over the sample, and the medium-horizon walk-forward folds were negative; [docs/BENCHMARKS.md](docs/BENCHMARKS.md) says so plainly. Live trading is disabled by default and requires deliberate confirmations. Paper trade first.
+> Research software, not investment advice. Live trading is disabled by default and requires deliberate confirmations. Paper trade first, and read the walk-forward section of [docs/BENCHMARKS.md](docs/BENCHMARKS.md) before risking money.
 
 <details>
 <summary><strong>Console output</strong>: real short-horizon backtest</summary>
