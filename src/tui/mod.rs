@@ -59,6 +59,8 @@ enum JobEvent {
     Scan(Box<ScanReport>),
     Backtest(Box<BacktestResult>),
     Benchmark(Box<BenchmarkReport>),
+    /// Held positions evaluated for exit signals, refreshed with the portfolio.
+    HeldScan(Box<ScanReport>),
     Portfolio {
         account: Account,
         positions: Vec<Position>,
@@ -77,6 +79,7 @@ enum Tab {
     Backtest,
     Horizons,
     Help,
+    Picks,
 }
 
 impl Tab {
@@ -89,6 +92,7 @@ impl Tab {
             Self::Backtest => 4,
             Self::Horizons => 5,
             Self::Help => 6,
+            Self::Picks => 7,
         }
     }
 
@@ -100,6 +104,7 @@ impl Tab {
             4 => Self::Backtest,
             5 => Self::Horizons,
             6 => Self::Help,
+            7 => Self::Picks,
             _ => Self::Signals,
         }
     }
@@ -176,6 +181,7 @@ struct App {
     portfolio: Option<(Account, Vec<Position>, Vec<Order>)>,
     series_cache: Option<(String, Series)>,
     horizon_rows: Vec<HorizonRow>,
+    held: Option<ScanReport>,
     ought_quit: bool,
 }
 
@@ -209,6 +215,7 @@ pub async fn run(request: TuiRequest) -> Result<()> {
         portfolio: None,
         series_cache: None,
         horizon_rows: Vec::new(),
+        held: None,
         ought_quit: false,
     };
     app.spawn_initial(request.market);
@@ -281,6 +288,7 @@ impl App {
                 positions,
                 orders,
             } => self.portfolio = Some((account, positions, orders)),
+            JobEvent::HeldScan(report) => self.held = Some(*report),
             JobEvent::Done => {
                 self.running = false;
                 self.progress = None;
@@ -305,7 +313,7 @@ impl App {
             KeyCode::BackTab => {
                 self.tab = Tab::from_index((self.tab.index() + 6) % 7);
             }
-            KeyCode::Char(c @ '1'..='7') => {
+            KeyCode::Char(c @ '1'..='8') => {
                 self.tab = Tab::from_index(c.to_digit(10).unwrap_or(1) as usize - 1);
             }
             KeyCode::Down | KeyCode::Char('j') => self.move_selection(1),
@@ -462,7 +470,7 @@ impl App {
                 )
                 .await?;
                 let _ = tx.send(JobEvent::Scan(Box::new(report)));
-                send_portfolio(&market, &tx).await;
+                send_portfolio(&market, &tx, &cfg, &selection, start, end, &cancel).await;
                 Ok::<(), Error>(())
             }
             .await;
@@ -524,7 +532,7 @@ impl App {
                 };
                 let result = engine::run_with_progress(&data, &base, params, Some(&progress))?;
                 let _ = tx.send(JobEvent::Backtest(Box::new(result)));
-                send_portfolio(&market, &tx).await;
+                send_portfolio(&market, &tx, &cfg, &selection, start, end, &cancel).await;
                 Ok::<(), Error>(())
             }
             .await;
@@ -551,6 +559,7 @@ impl App {
         let offline = self.offline;
         let refresh = self.refresh;
         let run_validation = self.run_validation;
+        let cancel = self.cancel.clone();
         let job = tokio::spawn(async move {
             let result = async {
                 let market = match market {
@@ -582,7 +591,7 @@ impl App {
                     run_validation,
                 )?;
                 let _ = tx.send(JobEvent::Benchmark(Box::new(report)));
-                send_portfolio(&market, &tx).await;
+                send_portfolio(&market, &tx, &cfg, &selection, start, end, &cancel).await;
                 Ok::<(), Error>(())
             }
             .await;
@@ -634,12 +643,13 @@ impl App {
             Tab::Portfolio => self.draw_portfolio(frame, layout[2]),
             Tab::Backtest => self.draw_backtest(frame, layout[2]),
             Tab::Horizons => self.draw_horizons(frame, layout[2]),
+            Tab::Picks => self.draw_picks(frame, layout[2]),
             Tab::Help => self.draw_help(frame, layout[2]),
         }
         let footer = Paragraph::new(Line::from(vec![
             Span::styled(" q ", key_style()),
             Span::raw("quit  "),
-            Span::styled(" Tab/1-7 ", key_style()),
+            Span::styled(" Tab/1-8 ", key_style()),
             Span::raw("tabs  "),
             Span::styled(" j/k ", key_style()),
             Span::raw("move  "),
@@ -771,6 +781,7 @@ impl App {
             "Backtest",
             "Horizons",
             "Help",
+            "Picks",
         ])
         .select(self.tab.index())
         .style(Style::default().fg(Color::DarkGray))
@@ -780,6 +791,126 @@ impl App {
                 .add_modifier(Modifier::BOLD),
         );
         frame.render_widget(tabs, area);
+    }
+
+    /// Top N signals for one action. The scan already sorts buy-first by score,
+    /// so filtering preserves the ranking.
+    fn draw_picks(&self, frame: &mut Frame, area: Rect) {
+        let halves = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Min(6), Constraint::Min(6)])
+            .split(area);
+
+        let heading = |text: &str| {
+            Line::from(Span::styled(
+                text.to_string(),
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            ))
+        };
+        let muted =
+            |text: String| Line::from(Span::styled(text, Style::default().fg(Color::DarkGray)));
+
+        let signals = self
+            .report
+            .as_ref()
+            .map(|r| r.signals.as_slice())
+            .unwrap_or(&[]);
+        let mut buys = vec![heading(
+            " Top 5 to buy: rule-based score ranking, not a forecast",
+        )];
+        buys.push(muted(format!(
+            " {:<7}{:>4}  {:<11}{:>9}{:>9}{:>9}{:>9}",
+            "SYMBOL", "STR", "RATING", "CLOSE", "ENTRY", "STOP", "NOTIONAL"
+        )));
+        let top_buys: Vec<&Signal> = signals
+            .iter()
+            .filter(|s| s.action == Action::Buy)
+            .take(5)
+            .collect();
+        if top_buys.is_empty() {
+            buys.push(Line::from(" no buy signals in the current scan"));
+        }
+        for s in &top_buys {
+            buys.push(Line::from(format!(
+                " {:<7}{:>4.0}  {:<11}{:>9.2}{:>9.2}{:>9.2}{:>9.0}",
+                s.symbol,
+                s.strength,
+                s.rating.label(),
+                s.price,
+                s.entry,
+                s.stop,
+                s.suggested_notional
+            )));
+        }
+        frame.render_widget(Paragraph::new(buys), halves[0]);
+
+        let held_qty: Vec<(String, f64)> = self
+            .portfolio
+            .as_ref()
+            .map(|(_, positions, _)| {
+                positions
+                    .iter()
+                    .map(|p| (p.symbol.clone(), p.qty))
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        let mut sells = vec![heading(
+            " Top 5 to sell: exit signals in your connected portfolio",
+        )];
+        if self.portfolio.is_none() {
+            sells.push(Line::from(
+                " no connected portfolio: add Alpaca paper keys, then press r to refresh",
+            ));
+        } else if held_qty.is_empty() {
+            sells.push(Line::from(" portfolio is empty, nothing to exit"));
+        } else {
+            sells.push(muted(format!(
+                " {:<7}{:>8}{:>7}{:>9}{:>9}{:>7}  {}",
+                "SYMBOL", "QTY", "ACTION", "CLOSE", "STOP", "RATING", "WHY"
+            )));
+            let held_signals = self
+                .held
+                .as_ref()
+                .map(|r| r.signals.as_slice())
+                .unwrap_or(&[]);
+            let exits: Vec<&Signal> = held_signals
+                .iter()
+                .filter(|s| s.action == Action::Sell)
+                .take(5)
+                .collect();
+            if exits.is_empty() {
+                sells.push(Line::from(format!(
+                    " {} held, no exit signals fired",
+                    held_qty.len()
+                )));
+            }
+            for s in &exits {
+                let qty = held_qty
+                    .iter()
+                    .find(|(sym, _)| sym == &s.symbol)
+                    .map(|(_, q)| *q)
+                    .unwrap_or(0.0);
+                sells.push(Line::from(format!(
+                    " {:<7}{:>8.2}{:>7}{:>9.2}{:>9.2}{:>7}  {}",
+                    s.symbol,
+                    qty,
+                    "SELL",
+                    s.price,
+                    s.stop,
+                    s.rating.label(),
+                    s.reasons.first().cloned().unwrap_or_default()
+                )));
+            }
+            for (symbol, qty) in held_qty.iter().take(5) {
+                if exits.iter().any(|s| &s.symbol == symbol) {
+                    continue;
+                }
+                sells.push(muted(format!(" {:<7}{:>8.2}   HOLD", symbol, qty)));
+            }
+        }
+        frame.render_widget(Paragraph::new(sells), halves[1]);
     }
 
     fn sorted_indices(&self) -> Vec<usize> {
@@ -1599,7 +1730,7 @@ impl App {
                     .add_modifier(Modifier::BOLD),
             )]),
             Line::from(""),
-            Line::from("1-7 or Tab      switch tabs"),
+            Line::from("1-8 or Tab      switch tabs"),
             Line::from("j/k, Up/Down    move signal selection"),
             Line::from("s / S           cycle sort column / reverse order"),
             Line::from("Enter           open the selected symbol chart"),
@@ -1610,7 +1741,7 @@ impl App {
             Line::from("e               export CSV/JSON to the reports directory"),
             Line::from("q               quit"),
             Line::from(""),
-            Line::from("Tabs: Signals, Chart, Rating, Portfolio, Backtest, Horizons, Help."),
+            Line::from("Tabs: Signals, Chart, Rating, Portfolio, Backtest, Horizons, Help, Picks."),
             Line::from("Horizons shows short/medium/long actions with separate parameter sets."),
             Line::from(""),
             Line::from(
@@ -1642,7 +1773,15 @@ fn finish(result: Result<()>, tx: &UnboundedSender<JobEvent>) {
     }
 }
 
-async fn send_portfolio(market: &MarketData, tx: &UnboundedSender<JobEvent>) {
+async fn send_portfolio(
+    market: &MarketData,
+    tx: &UnboundedSender<JobEvent>,
+    cfg: &Config,
+    selection: &Selection,
+    start: NaiveDate,
+    end: NaiveDate,
+    cancel: &Arc<AtomicBool>,
+) {
     let Some(client) = market.client() else {
         return;
     };
@@ -1651,11 +1790,36 @@ async fn send_portfolio(market: &MarketData, tx: &UnboundedSender<JobEvent>) {
         client.positions().await,
         client.orders("open").await,
     ) {
+        let held: Vec<String> = positions.iter().map(|p| p.symbol.clone()).collect();
         let _ = tx.send(JobEvent::Portfolio {
             account,
             positions,
             orders,
         });
+        if held.is_empty() {
+            return;
+        }
+        // Same rules as the scan, so a held name is judged on the same evidence.
+        let as_of = scan::completed_session_date(market).await;
+        let end = as_of.unwrap_or(end);
+        let analysis_start = (end - Duration::days(500)).max(start);
+        let options = AnalysisOptions {
+            horizon: selection.horizon,
+            strategy: selection.strategy,
+            risk: selection.risk,
+            vol_target_pct: selection.vol_target_pct,
+            risk_pct_override: selection.risk_pct_override,
+            equity: selection.capital,
+            config: cfg,
+            as_of,
+            stale_bar_days: cfg.backtest.stale_bar_days,
+            cancel: Some(cancel.clone()),
+        };
+        if let Ok(report) =
+            scan::analyze_market(market, &held, analysis_start, end, &options, None).await
+        {
+            let _ = tx.send(JobEvent::HeldScan(Box::new(report)));
+        }
     }
 }
 
@@ -1950,6 +2114,7 @@ mod tests {
             portfolio: None,
             series_cache: None,
             horizon_rows: Vec::new(),
+            held: None,
             ought_quit: false,
         }
     }
@@ -1962,6 +2127,52 @@ mod tests {
         assert_eq!(app.selection.risk_pct_override, None);
         // rerun was attempted and refused because a job is flagged running
         assert_eq!(app.status, "a job is already running");
+    }
+
+    #[test]
+    fn picks_tab_is_reachable_and_renders_empty() {
+        let mut app = app();
+        // Keys are 1-based: 1 Signals .. 7 Help (unchanged), 8 Picks.
+        app.handle_key(KeyEvent::from(KeyCode::Char('8')));
+        assert_eq!(app.tab.index(), Tab::Picks.index());
+        app.handle_key(KeyEvent::from(KeyCode::Char('7')));
+        assert_eq!(app.tab.index(), Tab::Help.index());
+        app.handle_key(KeyEvent::from(KeyCode::Char('1')));
+        assert_eq!(app.tab.index(), Tab::Signals.index());
+        let indices: Vec<usize> = [
+            Tab::Signals,
+            Tab::Chart,
+            Tab::Rating,
+            Tab::Portfolio,
+            Tab::Backtest,
+            Tab::Horizons,
+            Tab::Help,
+            Tab::Picks,
+        ]
+        .iter()
+        .map(|t| t.index())
+        .collect();
+        assert_eq!(indices, vec![0, 1, 2, 3, 4, 5, 6, 7]);
+    }
+
+    #[test]
+    fn picks_tab_renders_without_data() {
+        let mut app = app();
+        app.tab = Tab::Picks;
+        let backend = ratatui::backend::TestBackend::new(100, 30);
+        let mut terminal = ratatui::Terminal::new(backend).expect("terminal");
+        terminal.draw(|frame| app.draw(frame)).expect("draw");
+        let buffer = terminal.backend().buffer();
+        let text: String = buffer
+            .content()
+            .iter()
+            .map(|c| c.symbol().to_string())
+            .collect();
+        assert!(text.contains("Top 5 to buy"), "buy section renders");
+        assert!(
+            text.contains("no connected portfolio"),
+            "sell side explains itself"
+        );
     }
 
     #[test]

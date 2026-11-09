@@ -2,12 +2,18 @@
 
 All notable changes to TPI-RS are recorded here. The project follows semantic versioning.
 
-## [Unreleased]
+## [0.2.0] - 2026-11-09
 
 ### Added
 
+- Picks tab in the TUI (key `8`): the top five buy candidates from the current scan and the top five exit candidates from the connected Alpaca portfolio. Held positions are evaluated with the same rules as the scan, in the same background job as the portfolio refresh. Read-only, no order submission.
+- `R` in the TUI cycles the risk profile (conservative, balanced, aggressive), clears any `--risk-pct` override and reruns the current job.
 - `--vol-target <pct>` for volatility-targeted position sizing (annualized position volatility, 0 = off) and `--risk-pct <pct>` to override the per-trade risk budget. Both default to existing behavior.
 - `docs/BENCHMARKS.md` section 13 records the sizing experiment. Volatility targeting moved return and drawdown together and left Sharpe and Calmar flat, while a deployment-matched fixed-risk control produced identical Sharpe.
+
+### Changed
+
+- The README leads with the default-horizon comparison table against SPY, QQQ, the equal-weight universe and cash, plus the four sizing arms. The wins-first infographic and its short-horizon bullets are removed.
 
 ## [0.1.2] - 2026-11-08
 
