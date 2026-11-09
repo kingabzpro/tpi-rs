@@ -78,7 +78,9 @@ For Alpaca data, copy `.env.example` to `.env`, add your paper keys, then run `.
 | `tpi paper --once --dry-run` | Paper order check |
 | `tpi doctor` | Environment and API checks |
 
-Every prompt has an equivalent flag, so scripts never need to answer questions. `--output json` works for scans, backtests and benchmarks.
+Every prompt has an equivalent flag, so scripts never need to answer questions. `--output json` works for scans, backtests and benchmarks. Sizing can be overridden with `--risk`, `--vol-target <pct>` and `--risk-pct <pct>`.
+
+Dashboard keys: `1-8` switch tabs, `j/k` move, `s/S` sort, `R` cycles the risk profile, `r` reruns, `b` backtests, `e` exports, `Esc` cancels, `q` quits. The Picks tab shows the top five buy candidates from the current scan and the top five exit signals in your connected portfolio. It is read-only: no orders are submitted from the dashboard.
 
 ## Learn more
 
