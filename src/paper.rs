@@ -136,7 +136,12 @@ pub(crate) async fn run_session(
         let active_positions: Vec<&Position> =
             positions.iter().filter(|p| p.qty.abs() >= 1e-6).collect();
         let open_orders = client.orders("open").await?;
-        let recent_orders = client.orders("all").await.unwrap_or_default();
+        // Fail closed: without the order history the daily budget cannot be
+        // checked, so entries are blocked instead of assuming a clean day.
+        let (recent_orders, history_error) = match client.orders("all").await {
+            Ok(orders) => (orders, None),
+            Err(e) => (Vec::new(), Some(e.to_string())),
+        };
         print_account(label, &account, &positions, &open_orders, &recent_orders);
 
         let mut symbols = universe::parse_tickers(&options.tickers);
@@ -222,6 +227,22 @@ pub(crate) async fn run_session(
                 .iter()
                 .find(|s| s.symbol == pos.symbol && s.strategy == strategy);
             let current = pos.current_price.unwrap_or(pos.avg_entry_price);
+            if is_dust(
+                pos.qty_available.unwrap_or(pos.qty),
+                current,
+                cfg.trading.min_order_notional,
+            ) {
+                println!(
+                    "{}",
+                    ansi::dim(&format!(
+                        "{}: holding is worth ${:.2}, below the ${:.2} minimum; no exit order",
+                        pos.symbol,
+                        pos.qty_available.unwrap_or(pos.qty).abs() * current,
+                        cfg.trading.min_order_notional
+                    ))
+                );
+                continue;
+            }
             let stop_hit = signal
                 .map(|s| s.stop > 0.0 && current <= s.stop)
                 .unwrap_or(false);
@@ -263,10 +284,27 @@ pub(crate) async fn run_session(
         if can_enter {
             let today = Utc::now().date_naive();
             let (orders_today, notional_today) = daily_usage(&recent_orders, today);
-            if let Some(reason) = daily_gate(orders_today, notional_today, cfg, account.equity) {
+            if let Some(error) = &history_error {
+                println!(
+                    "{}",
+                    ansi::yellow(&format!(
+                        "RISK: order history unavailable ({error}); no new entry this cycle."
+                    ))
+                );
+            } else if let Some(reason) =
+                daily_gate(orders_today, notional_today, cfg, account.equity)
+            {
                 println!("{}", ansi::yellow(&format!("RISK: {reason}")));
             } else if let Some(best) = analysis.strongest() {
-                if active_positions.iter().any(|p| p.symbol == best.symbol) {
+                if best.stale {
+                    println!(
+                        "{}",
+                        ansi::yellow(&format!(
+                            "RISK: {} signal is stale (last bar {}); no new entry.",
+                            best.symbol, best.as_of
+                        ))
+                    );
+                } else if active_positions.iter().any(|p| p.symbol == best.symbol) {
                     println!(
                         "{}",
                         ansi::dim(&format!("{}: already held; no add-on", best.symbol))
@@ -456,6 +494,12 @@ async fn submit_and_report(
         );
     }
     Ok(Some(order))
+}
+
+/// A position too small to be worth an order. Selling it costs a ticket and
+/// pollutes the daily budget, so the loop leaves it for `--flatten`.
+fn is_dust(qty: f64, price: f64, min_notional: f64) -> bool {
+    qty.abs() * price.abs() < min_notional
 }
 
 /// Orders the account already sent today. The entry gate uses both the count and
@@ -704,6 +748,16 @@ mod tests {
         cfg.trading.max_trades_per_day = max_orders;
         cfg.trading.max_daily_notional_pct = notional_pct;
         cfg
+    }
+
+    #[test]
+    fn dust_is_left_alone() {
+        // 0.0000007 shares of a $4 stock is not worth an order ticket.
+        assert!(is_dust(0.000_000_7, 4.10, 10.0));
+        assert!(is_dust(0.5, 12.0, 10.0));
+        // A normal position still exits.
+        assert!(!is_dust(20.0, 95.67, 10.0));
+        assert!(!is_dust(1.0, 1053.46, 10.0));
     }
 
     #[test]
