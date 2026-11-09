@@ -25,12 +25,13 @@ TPI-RS is a Windows-native algorithmic trading system for US stocks. It scans fo
 | Arm | Final | Total | CAGR | Sharpe | Sortino | Max DD | Vol | Calmar |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | TPI | $10,913 | +9.13% | 2.96% | 0.65 | 0.97 | 5.15% | 4.71% | 0.58 |
+| TPI, vol target 10% | $11,419 | +14.19% | 4.53% | 0.64 | 0.96 | 8.08% | 7.39% | 0.56 |
 | SPY | $18,667 | +86.67% | 23.17% | 1.47 | 2.19 | 18.74% | 14.84% | 1.24 |
 | QQQ | $19,945 | +99.45% | 25.92% | 1.21 | 1.78 | 22.72% | 20.45% | 1.14 |
 | Equal-weight universe | $19,228 | +92.28% | 24.39% | 1.53 | 2.29 | 18.96% | 14.90% | 1.29 |
 | Cash | $10,000 | 0.00% | 0.00% | 0.00 | 0.00 | 0.00% | 0.00% | 0.00 |
 
-Read it straight. Over this window the strategy lost to buy-and-hold and its worst drawdown was about a third of SPY's, because it sat in cash most of the time: a 1% risk budget against a 2.5 ATR stop keeps only about 17.6% of equity deployed on average. The low drawdown is real. The outperformance is not, and more risk did not fix it: volatility targeting and higher fixed risk both moved return and drawdown together and left Sharpe at 0.64. Full tables, windows and walk-forward: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+Read it straight. Over this window the strategy lost to buy-and-hold and its worst drawdown was about a third of SPY's, because it sat in cash most of the time: a 1% risk budget against a 2.5 ATR stop keeps only about 17.6% of equity deployed on average. The low drawdown is real. The outperformance is not. The vol-target row is the sizing experiment: it deploys more, earns more and draws down more, and lands on the same Sharpe, so sizing is not the missing piece. Other risk levels, windows and walk-forward: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ## Speed and memory
 
