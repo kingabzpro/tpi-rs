@@ -300,14 +300,17 @@ impl RiskProfile {
             Self::Conservative => RiskParams {
                 risk_per_trade_pct: 0.5,
                 max_position_pct: 50.0,
+                vol_target_pct: 0.0,
             },
             Self::Balanced => RiskParams {
                 risk_per_trade_pct: 1.0,
                 max_position_pct: 75.0,
+                vol_target_pct: 0.0,
             },
             Self::Aggressive => RiskParams {
                 risk_per_trade_pct: 1.5,
                 max_position_pct: 100.0,
+                vol_target_pct: 0.0,
             },
         }
     }
@@ -325,6 +328,25 @@ pub struct RiskParams {
     pub risk_per_trade_pct: f64,
     /// Hard cap on a single position as a percentage of equity.
     pub max_position_pct: f64,
+    /// Annualized position volatility target, percent. Zero keeps risk-budget sizing.
+    #[serde(default)]
+    pub vol_target_pct: f64,
+}
+
+impl RiskParams {
+    /// CLI overrides. A volatility target replaces the dollar risk budget with an
+    /// inverse-volatility notional, so per-trade loss then scales with stop distance.
+    pub fn with_overrides(mut self, risk_pct: Option<f64>, vol_target_pct: f64) -> Self {
+        if let Some(pct) = risk_pct.filter(|pct| pct.is_finite() && *pct > 0.0) {
+            self.risk_per_trade_pct = pct;
+        }
+        self.vol_target_pct = if vol_target_pct.is_finite() {
+            vol_target_pct.max(0.0)
+        } else {
+            0.0
+        };
+        self
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

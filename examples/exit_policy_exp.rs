@@ -198,6 +198,8 @@ fn backtest_config(
         horizon,
         strategy: StrategyMode::Tpi,
         risk: RiskProfile::Balanced,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
         fees: FeeModel {
             commission_bps: cfg.backtest.commission_bps,
             spread_bps: cfg.backtest.spread_bps,

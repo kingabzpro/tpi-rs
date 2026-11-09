@@ -158,6 +158,8 @@ pub(crate) async fn run_session(
                 horizon,
                 strategy,
                 risk,
+                vol_target_pct: 0.0,
+                risk_pct_override: None,
                 equity,
                 config: cfg,
                 as_of: Some(as_of),

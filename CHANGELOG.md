@@ -2,6 +2,13 @@
 
 All notable changes to TPI-RS are recorded here. The project follows semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- `--vol-target <pct>` for volatility-targeted position sizing (annualized position volatility, 0 = off) and `--risk-pct <pct>` to override the per-trade risk budget. Both default to existing behavior.
+- `docs/BENCHMARKS.md` section 13 records the sizing experiment. Volatility targeting moved return and drawdown together and left Sharpe and Calmar flat, while a deployment-matched fixed-risk control produced identical Sharpe.
+
 ## [0.1.2] - 2026-11-08
 
 ### Changed

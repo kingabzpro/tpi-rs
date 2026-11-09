@@ -272,3 +272,32 @@ Artifacts from the recorded run:
 - `reports/perf-20261108-113959.json`
 
 Results will differ on another machine, another data snapshot, or after Alpaca back-adjusts historical prices.
+
+## 13. Volatility-targeted sizing experiment
+
+Branch `experiment/vol-targeted-sizing` added `--vol-target <pct>` (annualized position volatility target, default 0 = off) and `--risk-pct <pct>` (override for the per-trade risk budget). Same universe, period, costs and fills as section 4.
+
+| Arm | Final | Total | Sharpe | Max DD | Calmar | Vol | Avg deployed |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Fixed risk 1.0% (default) | $10,913 | +9.13% | 0.65 | 5.15% | 0.58 | 4.71% | 17.6% |
+| Vol target 6% | $10,864 | +8.64% | 0.65 | 4.86% | 0.58 | 4.46% | 16.6% |
+| Vol target 8% | $11,144 | +11.44% | 0.64 | 6.48% | 0.57 | 5.92% | 22.2% |
+| Vol target 10% | $11,419 | +14.19% | 0.64 | 8.08% | 0.56 | 7.39% | 27.7% |
+| Vol target 14% | $11,960 | +19.60% | 0.64 | 11.27% | 0.55 | 10.29% | 38.6% |
+| Fixed risk 2.0% (control) | $11,783 | +17.83% | 0.64 | 10.24% | 0.55 | 9.35% | 35.1% |
+| Fixed risk 3.0% (control) | $12,833 | +28.33% | 0.68 | 15.03% | 0.58 | 13.78% | 51.5% |
+| Fixed risk 4.0% (control) | $14,340 | +43.40% | 0.80 | 16.87% | 0.76 | 16.84% | 61.8% |
+
+Short horizon, same comparison:
+
+| Arm | Total | Sharpe | Max DD | Calmar |
+|---|---:|---:|---:|---:|
+| Fixed risk 1.0% (default) | +25.24% | 1.09 | 6.35% | 1.23 |
+| Vol target 10% | +32.32% | 1.09 | 7.93% | 1.24 |
+| Fixed risk 4.0% (control) | +105.11% | 1.16 | 19.40% | 1.40 |
+
+Benchmark mode with `--vol-target 10`: total return rises from +9.13% to +14.19%, Sharpe stays at 0.64, max drawdown rises from 5.15% to 8.08%. Walk-forward out-of-sample returns scale down with the leverage: fold OOS returns move from -2.41/-1.52/-1.64/-0.66% to -3.82/-2.87/-3.12/-0.93%, with OOS Sharpe unchanged (-1.19, -0.94, -0.78, -0.13) and the untouched holdout going from -0.66% at 8.11% drawdown to -0.93% at 10.12%.
+
+Interpretation: volatility targeting is a leverage knob here, not an edge. Sizing is already inverse-volatility, because `shares` comes from `risk_budget / (ATR multiple x ATR)`. Replacing the dollar risk budget with a volatility target moves return and drawdown together along the same line and leaves Sharpe and Calmar flat or slightly worse. The deployment-matched control (vol target 14% at 38.6% average deployment versus fixed risk 2.0% at 35.1%) produces identical Sharpe, 0.64. Getting more return from this strategy requires accepting proportionally more drawdown, not better sizing math.
+
+`--vol-target` and `--risk-pct` ship disabled by default, so every earlier number in this document still reproduces.

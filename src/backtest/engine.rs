@@ -205,6 +205,8 @@ pub fn run_with_progress(
         volume_ratio_min: 1.0,
         min_history_bars: cfg.min_history_bars,
         long_only: true,
+        vol_target_pct: cfg.vol_target_pct,
+        risk_pct_override: cfg.risk_pct_override,
     };
 
     if let Some(p) = progress
@@ -260,7 +262,10 @@ pub fn run_with_progress(
                         cash,
                         fill,
                         stop,
-                        cfg.risk.params(),
+                        pe.atr,
+                        cfg.risk
+                            .params()
+                            .with_overrides(cfg.risk_pct_override, cfg.vol_target_pct),
                         cfg.allow_fractional,
                     );
                     if plan.notional >= 10.0 {
@@ -873,6 +878,8 @@ mod tests {
             horizon: Horizon::Medium,
             strategy: StrategyMode::Tpi,
             risk: RiskProfile::Balanced,
+            vol_target_pct: 0.0,
+            risk_pct_override: None,
             fees: FeeModel {
                 commission_bps: 0.0,
                 spread_bps: 2.0,

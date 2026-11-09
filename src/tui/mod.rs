@@ -435,6 +435,8 @@ impl App {
                     horizon: selection.horizon,
                     strategy: selection.strategy,
                     risk: selection.risk,
+                    vol_target_pct: selection.vol_target_pct,
+                    risk_pct_override: selection.risk_pct_override,
                     equity: selection.capital,
                     config: &cfg,
                     as_of,
@@ -1691,6 +1693,8 @@ fn backtest_config(
             selection.strategy
         },
         risk: selection.risk,
+        vol_target_pct: selection.vol_target_pct,
+        risk_pct_override: selection.risk_pct_override,
         fees: FeeModel {
             commission_bps: cfg.backtest.commission_bps,
             spread_bps: cfg.backtest.spread_bps,
@@ -1748,6 +1752,8 @@ fn compute_horizon_rows(
                     volume_ratio_min: cfg.strategy.volume_ratio_min,
                     min_history_bars: cfg.strategy.min_history_bars,
                     long_only: cfg.strategy.long_only,
+                    vol_target_pct: 0.0,
+                    risk_pct_override: None,
                 };
                 if let Ok(signal) =
                     evaluate_fast(symbol, &series, i, cfg.horizon_params(horizon), eval)

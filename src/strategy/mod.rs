@@ -28,6 +28,10 @@ pub struct EvalConfig {
     pub volume_ratio_min: f64,
     pub min_history_bars: usize,
     pub long_only: bool,
+    /// Annualized volatility target for sizing, percent. Zero keeps risk-budget sizing.
+    pub vol_target_pct: f64,
+    /// Override for the equity percentage risked per trade.
+    pub risk_pct_override: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -312,7 +316,10 @@ fn evaluate_inner(
             cfg.cash,
             close,
             stop,
-            cfg.risk.params(),
+            atr,
+            cfg.risk
+                .params()
+                .with_overrides(cfg.risk_pct_override, cfg.vol_target_pct),
             cfg.allow_fractional,
         )
     } else {
@@ -674,6 +681,8 @@ mod tests {
             volume_ratio_min: 1.0,
             min_history_bars: 220,
             long_only: true,
+            vol_target_pct: 0.0,
+            risk_pct_override: None,
         }
     }
 

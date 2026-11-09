@@ -41,6 +41,8 @@ fn bench_indicators(c: &mut Criterion) {
         volume_ratio_min: 1.0,
         min_history_bars: 220,
         long_only: true,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
     };
     group.bench_function("evaluate_fast_5000", |bench| {
         bench.iter(|| {

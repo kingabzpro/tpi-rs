@@ -46,6 +46,12 @@ pub struct BacktestConfig {
     pub horizon: Horizon,
     pub strategy: crate::model::StrategyMode,
     pub risk: RiskProfile,
+    /// Annualized volatility target for sizing, percent. Zero keeps risk-budget sizing.
+    #[serde(default)]
+    pub vol_target_pct: f64,
+    /// Override for the equity percentage risked per trade.
+    #[serde(default)]
+    pub risk_pct_override: Option<f64>,
     pub fees: FeeModel,
     pub allow_fractional: bool,
     pub risk_free_rate_pct: f64,

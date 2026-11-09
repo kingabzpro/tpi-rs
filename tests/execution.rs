@@ -18,6 +18,8 @@ fn cfg(start: NaiveDate, end: NaiveDate) -> BacktestConfig {
         horizon: Horizon::Medium,
         strategy: StrategyMode::Tpi,
         risk: RiskProfile::Balanced,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
         fees: FeeModel {
             commission_bps: 10.0,
             spread_bps: 2.0,
@@ -53,6 +55,8 @@ fn eval_cfg() -> EvalConfig {
         horizon: Horizon::Medium,
         strategy: StrategyMode::Tpi,
         risk: RiskProfile::Balanced,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
         equity: 10_000.0,
         cash: 10_000.0,
         allow_fractional: true,

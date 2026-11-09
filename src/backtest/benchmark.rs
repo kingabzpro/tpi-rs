@@ -396,6 +396,8 @@ mod tests {
             horizon: Horizon::Medium,
             strategy: StrategyMode::Tpi,
             risk: RiskProfile::Balanced,
+            vol_target_pct: 0.0,
+            risk_pct_override: None,
             fees: FeeModel {
                 commission_bps: 0.0,
                 spread_bps: 2.0,

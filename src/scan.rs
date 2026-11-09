@@ -65,6 +65,8 @@ pub struct AnalysisOptions<'a> {
     pub horizon: Horizon,
     pub strategy: StrategyMode,
     pub risk: RiskProfile,
+    pub vol_target_pct: f64,
+    pub risk_pct_override: Option<f64>,
     pub equity: f64,
     pub config: &'a Config,
     pub as_of: Option<NaiveDate>,
@@ -236,6 +238,8 @@ fn evaluate_symbol(
             volume_ratio_min: options.config.strategy.volume_ratio_min,
             min_history_bars: options.config.strategy.min_history_bars,
             long_only: options.config.strategy.long_only,
+            vol_target_pct: options.vol_target_pct,
+            risk_pct_override: options.risk_pct_override,
         };
         let mut signal = evaluate(symbol, &series, i, params, eval)?;
         signal.stale = stale;
@@ -323,6 +327,8 @@ mod tests {
             horizon: Horizon::Medium,
             strategy: StrategyMode::Tpi,
             risk: RiskProfile::Balanced,
+            vol_target_pct: 0.0,
+            risk_pct_override: None,
             equity: 10_000.0,
             config: &cfg,
             as_of: Some(today),

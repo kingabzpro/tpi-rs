@@ -166,6 +166,8 @@ async fn run_scan(
             horizon: selection.horizon,
             strategy: selection.strategy,
             risk: selection.risk,
+            vol_target_pct: selection.vol_target_pct,
+            risk_pct_override: selection.risk_pct_override,
             equity: selection.capital,
             config: cfg,
             as_of,
@@ -341,6 +343,8 @@ fn backtest_config(
         horizon: selection.horizon,
         strategy: selection.strategy,
         risk: selection.risk,
+        vol_target_pct: selection.vol_target_pct,
+        risk_pct_override: selection.risk_pct_override,
         fees: FeeModel {
             commission_bps: cfg.backtest.commission_bps,
             spread_bps: cfg.backtest.spread_bps,

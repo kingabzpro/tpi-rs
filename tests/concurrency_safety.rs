@@ -40,6 +40,8 @@ async fn concurrent_offline_scans_are_deterministic() {
                 horizon: Horizon::Medium,
                 strategy: StrategyMode::Compare,
                 risk: RiskProfile::Balanced,
+                vol_target_pct: 0.0,
+                risk_pct_override: None,
                 equity: 10_000.0,
                 config: &cfg,
                 as_of: Some(today),

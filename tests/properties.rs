@@ -43,6 +43,8 @@ fn eval_cfg() -> EvalConfig {
         volume_ratio_min: 1.0,
         min_history_bars: 220,
         long_only: true,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
     }
 }
 
@@ -145,9 +147,11 @@ proptest! {
             equity,
             entry,
             stop,
+            entry * 0.02,
             tpi_rs::model::RiskParams {
                 risk_per_trade_pct: risk_pct,
                 max_position_pct: max_pos,
+                vol_target_pct: 0.0,
             },
             fractional,
         );

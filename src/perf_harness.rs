@@ -90,6 +90,8 @@ pub fn run(cfg: &Config) -> Result<()> {
         volume_ratio_min: 1.0,
         min_history_bars: 220,
         long_only: true,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
     };
     // Warm-up evaluation.
     for s in &names {
@@ -133,6 +135,8 @@ pub fn run(cfg: &Config) -> Result<()> {
         horizon: Horizon::Medium,
         strategy: StrategyMode::Tpi,
         risk: RiskProfile::Balanced,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
         fees: FeeModel {
             commission_bps: cfg.backtest.commission_bps,
             spread_bps: cfg.backtest.spread_bps,

@@ -148,6 +148,14 @@ pub struct Cli {
     #[arg(long, value_enum)]
     pub risk: Option<RiskProfile>,
 
+    /// Annualized volatility target for position sizing, percent. Replaces the
+    /// fixed risk budget with inverse-volatility sizing. Zero keeps current behavior.
+    #[arg(long)]
+    pub vol_target: Option<f64>,
+
+    /// Override the equity percentage risked per trade, percent.
+    #[arg(long)]
+    pub risk_pct: Option<f64>,
     /// Starting capital / analysis equity in USD.
     #[arg(long)]
     pub capital: Option<f64>,
@@ -252,6 +260,8 @@ pub struct Selection {
     pub mode: Mode,
     pub strategy: StrategyMode,
     pub risk: RiskProfile,
+    pub vol_target_pct: f64,
+    pub risk_pct_override: Option<f64>,
     pub capital: f64,
     pub universe: Vec<String>,
 }
@@ -547,6 +557,8 @@ pub fn resolve(cli: &Cli, cfg: &Config) -> Result<Selection> {
         mode,
         strategy,
         risk,
+        vol_target_pct: cli.vol_target.unwrap_or(0.0).max(0.0),
+        risk_pct_override: cli.risk_pct,
         capital,
         universe,
     })

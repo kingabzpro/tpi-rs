@@ -30,6 +30,8 @@ fn scan_exports_json_and_csv() {
                 horizon: Horizon::Medium,
                 strategy: StrategyMode::Consensus,
                 risk: RiskProfile::Balanced,
+                vol_target_pct: 0.0,
+                risk_pct_override: None,
                 equity: 10_000.0,
                 config: &cfg,
                 as_of: Some(end),
@@ -81,6 +83,8 @@ fn backtest_exports_all_artifacts() {
         horizon: Horizon::Medium,
         strategy: StrategyMode::Tpi,
         risk: RiskProfile::Balanced,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
         fees: FeeModel {
             commission_bps: 0.0,
             spread_bps: 2.0,
@@ -134,6 +138,8 @@ fn benchmark_export_includes_per_leg_artifacts() {
         horizon: Horizon::Medium,
         strategy: StrategyMode::Compare,
         risk: RiskProfile::Balanced,
+        vol_target_pct: 0.0,
+        risk_pct_override: None,
         fees: FeeModel {
             commission_bps: 0.0,
             spread_bps: 2.0,
