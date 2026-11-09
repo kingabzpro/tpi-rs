@@ -62,6 +62,8 @@ The release includes the Windows zip and a matching `.sha256` file. The zip cont
 .\tpi.exe --offline --tickers AAPL,MSFT,NVDA --mode scan --strategy compare
 ```
 
+`--offline` generates deterministic demo bars. It does not read the cache, so drop it to get real prices.
+
 For Alpaca data, copy `.env.example` to `.env`, add your paper keys, then run `.\tpi.exe doctor`. The Windows installer verifies the checksum and installs to `%LOCALAPPDATA%\TPI-RS`: [scripts/install-windows.ps1](scripts/install-windows.ps1).
 
 ## Commands
@@ -80,7 +82,19 @@ For Alpaca data, copy `.env.example` to `.env`, add your paper keys, then run `.
 
 Every prompt has an equivalent flag, so scripts never need to answer questions. `--output json` works for scans, backtests and benchmarks. Sizing can be overridden with `--risk`, `--vol-target <pct>` and `--risk-pct <pct>`.
 
-Dashboard keys: `1-8` switch tabs, `j/k` move, `s/S` sort, `R` cycles the risk profile, `r` reruns, `b` backtests, `e` exports, `Esc` cancels, `q` quits. The Picks tab shows the top five buy candidates from the current scan and the top five exit signals in your connected portfolio. It is read-only: no orders are submitted from the dashboard.
+Dashboard keys: `1-8` switch tabs, `j/k` move, `s/S` sort, `R` cycles the risk profile, `r` reruns, `b` backtests, `e` exports, `Esc` cancels, `q` quits. The Picks tab shows the top five buy candidates from the current scan and the top five exit signals in your connected portfolio. It is read-only: no orders are submitted from the dashboard. On a day when nothing scores a BUY the buy half is empty, which is the strategy, not a fault.
+
+## Automate paper trading
+
+`tpi paper` already does what an "auto" mode would: it discovers the Top 100 most-active US stocks, scores them, manages exits, and holds one position at a time (`max_open_positions = 1`), refusing entries past `max_trades_per_day`, the daily loss limit or the kill switch.
+
+```powershell
+.\tpi.exe paper --top 100 --loop-secs 300     # one cycle every 5 minutes, until Ctrl-C
+.\tpi.exe paper --top 100 --once              # a single cycle
+.\tpi.exe paper --top 100 --once --dry-run    # decide, submit nothing
+```
+
+It submits orders only while the market is open. Outside hours it prints the signals it would have acted on, unless you pass `--wait-for-open`. Stop it with Ctrl-C, or create the kill-switch file named in `config/default.toml` and it exits before the next order. It prints a status block every cycle and sends no desktop notification, so fill alerts need the console in view.
 
 ## Learn more
 
