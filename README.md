@@ -20,13 +20,20 @@ TPI-RS is a Windows-native algorithmic trading system for US stocks. It scans fo
 
 ## Results against SPY and QQQ
 
-| | Total | Sharpe | Max DD |
-|---|---:|---:|---:|
-| TPI | +9.13% | 0.65 | 5.15% |
-| SPY | +86.67% | 1.47 | 18.74% |
-| QQQ | +99.45% | 1.21 | 22.72% |
+50 US stocks, Alpaca IEX adjusted bars, next-open fills, costs included, November 2023 to November 2026. This is the only comparison table in this README.
 
-2023-11 to 2026-11, 50 US stocks, costs and next-open fills included. The strategy wins on drawdown and loses on return, and no sizing setting closes it: at 4.0% risk it runs more volatility than SPY for less than half the return. Every sizing arm and the walk-forward: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+| Arm | Final | Total | CAGR | Sharpe | Sortino | Max DD | Vol | Calmar |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| TPI, 1.0% risk (default) | $10,913 | +9.13% | 2.96% | 0.65 | 0.97 | 5.15% | 4.71% | 0.58 |
+| TPI, vol target 10% | $11,419 | +14.19% | 4.53% | 0.64 | 0.96 | 8.08% | 7.39% | 0.56 |
+| TPI, 2.0% risk | $11,783 | +17.83% | 5.63% | 0.64 | 0.95 | 10.24% | 9.35% | 0.55 |
+| TPI, 4.0% risk | $14,340 | +43.40% | 12.79% | 0.80 | 1.23 | 16.87% | 16.84% | 0.76 |
+| SPY | $18,667 | +86.67% | 23.17% | 1.47 | 2.19 | 18.74% | 14.84% | 1.24 |
+| QQQ | $19,945 | +99.45% | 25.92% | 1.21 | 1.78 | 22.72% | 20.45% | 1.14 |
+| Equal-weight universe | $19,228 | +92.28% | 24.39% | 1.53 | 2.29 | 18.96% | 14.90% | 1.29 |
+| Cash | $10,000 | 0.00% | 0.00% | 0.00 | 0.00 | 0.00% | 0.00% | 0.00 |
+
+Read it straight. The four TPI rows are the same 54 trades at four sizing settings, so they are a sensitivity check, not four strategies. Every one of them loses to buy-and-hold, and raising risk only moves return and drawdown along one line: at 4.0% the strategy carries more volatility than SPY (16.84% against 14.84%) for less than half the return. At the default it beats SPY on drawdown alone, because a 1% budget against a 2.5 ATR stop keeps about 17.6% of equity deployed. The low drawdown is real. The outperformance is not. Windows and walk-forward: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ## Speed and memory
 
