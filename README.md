@@ -14,7 +14,7 @@
   </a>
 </p>
 
-<p align="center"><sub>Captured on Windows 11. The dashboard (<code>tpi tui</code>): ranked signals, 26-vote rating, trade plan, chart, portfolio and backtests.</sub></p>
+<p align="center"><sub>Captured on Windows 11 with real Alpaca bars (<code>tpi tui</code>): ranked signals, 26-vote rating, trade plan, chart, portfolio, backtests and the Picks tab.</sub></p>
 
 TPI-RS is a Windows-native algorithmic trading system for US stocks. It scans for Donchian breakouts, confirms them with EMA trend, RSI, ATR and volume filters, adds a 26-vote technical rating, then backtests or trades the result through Alpaca. No Python, Docker, WSL, GPU or ML model.
 

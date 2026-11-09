@@ -78,8 +78,8 @@ enum Tab {
     Portfolio,
     Backtest,
     Horizons,
-    Help,
     Picks,
+    Help,
 }
 
 impl Tab {
@@ -91,8 +91,8 @@ impl Tab {
             Self::Portfolio => 3,
             Self::Backtest => 4,
             Self::Horizons => 5,
-            Self::Help => 6,
-            Self::Picks => 7,
+            Self::Picks => 6,
+            Self::Help => 7,
         }
     }
 
@@ -103,8 +103,8 @@ impl Tab {
             3 => Self::Portfolio,
             4 => Self::Backtest,
             5 => Self::Horizons,
-            6 => Self::Help,
-            7 => Self::Picks,
+            6 => Self::Picks,
+            7 => Self::Help,
             _ => Self::Signals,
         }
     }
@@ -780,8 +780,8 @@ impl App {
             "Portfolio",
             "Backtest",
             "Horizons",
-            "Help",
             "Picks",
+            "Help",
         ])
         .select(self.tab.index())
         .style(Style::default().fg(Color::DarkGray))
@@ -1741,7 +1741,7 @@ impl App {
             Line::from("e               export CSV/JSON to the reports directory"),
             Line::from("q               quit"),
             Line::from(""),
-            Line::from("Tabs: Signals, Chart, Rating, Portfolio, Backtest, Horizons, Help, Picks."),
+            Line::from("Tabs: Signals, Chart, Rating, Portfolio, Backtest, Horizons, Picks, Help."),
             Line::from("Horizons shows short/medium/long actions with separate parameter sets."),
             Line::from(""),
             Line::from(
@@ -2132,11 +2132,20 @@ mod tests {
     #[test]
     fn picks_tab_is_reachable_and_renders_empty() {
         let mut app = app();
-        // Keys are 1-based: 1 Signals .. 7 Help (unchanged), 8 Picks.
-        app.handle_key(KeyEvent::from(KeyCode::Char('8')));
-        assert_eq!(app.tab.index(), Tab::Picks.index());
-        app.handle_key(KeyEvent::from(KeyCode::Char('7')));
-        assert_eq!(app.tab.index(), Tab::Help.index());
+        // Keys are 1-based: 1 Signals .. 7 Picks, 8 Help.
+        for (key, tab) in [
+            ('1', Tab::Signals),
+            ('2', Tab::Chart),
+            ('3', Tab::Rating),
+            ('4', Tab::Portfolio),
+            ('5', Tab::Backtest),
+            ('6', Tab::Horizons),
+            ('7', Tab::Picks),
+            ('8', Tab::Help),
+        ] {
+            app.handle_key(KeyEvent::from(KeyCode::Char(key)));
+            assert_eq!(app.tab.index(), tab.index(), "key {key}");
+        }
         app.handle_key(KeyEvent::from(KeyCode::Char('1')));
         assert_eq!(app.tab.index(), Tab::Signals.index());
         let indices: Vec<usize> = [
@@ -2146,8 +2155,8 @@ mod tests {
             Tab::Portfolio,
             Tab::Backtest,
             Tab::Horizons,
-            Tab::Help,
             Tab::Picks,
+            Tab::Help,
         ]
         .iter()
         .map(|t| t.index())
