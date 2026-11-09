@@ -92,6 +92,14 @@ Data provenance: mixed cache and fresh Alpaca bars. Splits and dividends are emb
 
 ## 5. Headline results
 
+<p align="center">
+  <a href="screenshots/comparison.png">
+    <img src="screenshots/comparison.png" alt="TPI-RS short and medium returns and drawdowns versus SPY and QQQ" width="900">
+  </a>
+</p>
+
+<p align="center"><sub>Total return and maximum drawdown, TPI short and medium against SPY and QQQ. The README shows the wins-first view: <a href="screenshots/wins.png">wins.png</a>.</sub></p>
+
 | Strategy | Final | Total | CAGR | Sharpe | Sortino | Max DD | Calmar | Vol | Trades | Win | PF |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | TPI | $10,913.21 | +9.13% | +2.96% | 0.65 | 0.97 | 5.15% | 0.58 | 4.71% | 54 | 40.7% | 1.38 |
@@ -152,10 +160,19 @@ These runs use the same 50-stock universe, period, costs and risk profile, chang
 | Medium | $10,913.21 | +9.13% | +2.96% | 0.65 | 0.97 | 5.15% | 54 | 40.7% | 1.38 | 90% |
 | Long | $10,005.14 | +0.05% | +0.02% | 0.02 | 0.03 | 8.09% | 27 | 48.1% | 1.00 | 92% |
 
+Relative to benchmark daily returns:
+
+| Horizon | Benchmark | Alpha annual | Beta | Correlation | Tracking error |
+|---|---|---:|---:|---:|---:|
+| Short | SPY | +5.53% | 0.10 | 0.22 | 15.03% |
+| Short | QQQ | +6.07% | 0.07 | 0.20 | 20.28% |
+
+Positive annual alpha with near-zero beta reflects low market exposure, not market-beating timing.
+
 Six-month returns:
 
 | Horizon | W1 | W2 | W3 | W4 | W5 | W6 |
-|---|---:|---:|---:|---:|---:|---:|
+|---|---|---:|---:|---:|---:|---:|
 | Short | +3.18% | +0.78% | +3.45% | +3.48% | +12.08% | +1.49% |
 | Medium | +7.47% | +0.17% | -1.55% | +2.30% | +1.97% | -0.51% |
 | Long | +2.53% | +0.20% | +0.70% | +3.79% | -3.89% | -2.82% |
