@@ -4,7 +4,7 @@
 
 **Super fast algorithmic trading for US stocks, built entirely in Rust.**
 
-[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)
+[![CI](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kingabzpro/tpi-rs/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/badge/release-latest-blue)](https://github.com/kingabzpro/tpi-rs/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Rust](https://img.shields.io/badge/rust-1.88%2B-orange) ![Tests](https://img.shields.io/badge/tests-64%20passing-brightgreen)
 
 </div>
 
@@ -18,20 +18,19 @@
 
 TPI-RS is a Windows-native algorithmic trading system for US stocks. It scans for Donchian breakouts, confirms them with EMA trend, RSI, ATR and volume filters, adds a 26-vote technical rating, then backtests or trades the result through Alpaca. No Python, Docker, WSL, GPU or ML model.
 
-## Where it wins
+## Results against SPY and QQQ
 
-<p align="center">
-  <a href="docs/screenshots/wins.png">
-    <img src="docs/screenshots/wins.png" alt="TPI-RS versus SPY and QQQ: maximum drawdown, annual alpha, engine speed and memory, and trade quality" width="900">
-  </a>
-</p>
+50 US stocks, Alpaca IEX adjusted bars, next-open fills, costs included, November 2023 to November 2026. This is the only comparison table in this README.
 
-<p align="center"><sub>50 US stocks, Alpaca IEX adjusted bars, next-open fills, costs included, November 2023 to November 2026. Full numbers and walk-forward results: <a href="docs/BENCHMARKS.md">docs/BENCHMARKS.md</a>.</sub></p>
+| Arm | Final | Total | CAGR | Sharpe | Sortino | Max DD | Vol | Calmar |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| TPI | $10,913 | +9.13% | 2.96% | 0.65 | 0.97 | 5.15% | 4.71% | 0.58 |
+| SPY | $18,667 | +86.67% | 23.17% | 1.47 | 2.19 | 18.74% | 14.84% | 1.24 |
+| QQQ | $19,945 | +99.45% | 25.92% | 1.21 | 1.78 | 22.72% | 20.45% | 1.14 |
+| Equal-weight universe | $19,228 | +92.28% | 24.39% | 1.53 | 2.29 | 18.96% | 14.90% | 1.29 |
+| Cash | $10,000 | 0.00% | 0.00% | 0.00 | 0.00 | 0.00% | 0.00% | 0.00 |
 
-- **Roughly one third of SPY's drawdown.** 6.35% max drawdown against SPY's 18.74% and QQQ's 22.72%, so the strategy's worst stretch was a third as deep as the index's.
-- **Positive alpha at near-zero beta.** +5.53% annual alpha against SPY at beta 0.10 and correlation 0.22, from the low-exposure side rather than from riding the index.
-- **It wins the hard half-years.** +3.45% against SPY's -1.14% in the only down half-year, and +12.08% against SPY's +6.25% in TPI's best window.
-- **Positive expectancy.** 1.96 profit factor, 1.09 Sharpe, 1.80 Sortino, 47.3% win rate over 55 trades in three years.
+Read it straight. Over this window the strategy lost to buy-and-hold and its worst drawdown was about a third of SPY's, because it sat in cash most of the time: a 1% risk budget against a 2.5 ATR stop keeps only about 17.6% of equity deployed on average. The low drawdown is real. The outperformance is not. Four walk-forward folds and an untouched holdout were all negative, and no sizing change fixed it: volatility targeting and higher fixed risk both moved return and drawdown together and left Sharpe at 0.64. Full numbers, windows and walk-forward: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ## Speed and memory
 

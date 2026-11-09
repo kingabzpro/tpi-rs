@@ -98,7 +98,7 @@ Data provenance: mixed cache and fresh Alpaca bars. Splits and dividends are emb
   </a>
 </p>
 
-<p align="center"><sub>Total return and maximum drawdown, TPI short and medium against SPY and QQQ. The README shows the wins-first view: <a href="screenshots/wins.png">wins.png</a>.</sub></p>
+<p align="center"><sub>Total return and maximum drawdown, TPI short and medium against SPY and QQQ. The README carries the default-horizon comparison table.</sub></p>
 
 | Strategy | Final | Total | CAGR | Sharpe | Sortino | Max DD | Calmar | Vol | Trades | Win | PF |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
