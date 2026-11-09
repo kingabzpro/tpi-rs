@@ -295,6 +295,15 @@ impl RiskProfile {
         }
     }
 
+    /// Cycle for the TUI risk key: conservative, balanced, aggressive, repeat.
+    pub fn next(self) -> Self {
+        match self {
+            Self::Conservative => Self::Balanced,
+            Self::Balanced => Self::Aggressive,
+            Self::Aggressive => Self::Conservative,
+        }
+    }
+
     pub fn params(self) -> RiskParams {
         match self {
             Self::Conservative => RiskParams {
@@ -693,5 +702,21 @@ impl DataProvenance {
                 "Alpaca daily bars, raw prices".to_string()
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn risk_profile_cycle_returns_to_start() {
+        let start = RiskProfile::Balanced;
+        let once = start.next();
+        let twice = once.next();
+        let thrice = twice.next();
+        assert_eq!(once, RiskProfile::Aggressive);
+        assert_eq!(twice, RiskProfile::Conservative);
+        assert_eq!(thrice, start);
     }
 }

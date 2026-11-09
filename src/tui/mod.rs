@@ -315,6 +315,7 @@ impl App {
             KeyCode::Enter => self.tab = Tab::Chart,
             KeyCode::Esc => self.cancel_job(),
             KeyCode::Char('r') => self.rerun(),
+            KeyCode::Char('R') => self.cycle_risk(),
             KeyCode::Char('b') => self.spawn_backtest(),
             KeyCode::Char('a') => self.spawn_scan(),
             KeyCode::Char('e') => self.export_current(),
@@ -352,6 +353,14 @@ impl App {
             Mode::Benchmark => self.spawn_benchmark(),
             _ => self.spawn_scan(),
         }
+    }
+
+    /// Cycle the risk profile and replan, so the header and trade plans follow.
+    /// Clears any --risk-pct override so the profile is what actually sizes.
+    fn cycle_risk(&mut self) {
+        self.selection.risk = self.selection.risk.next();
+        self.selection.risk_pct_override = None;
+        self.rerun();
     }
 
     fn reset_job(&mut self) {
@@ -642,6 +651,8 @@ impl App {
             Span::raw("cancel  "),
             Span::styled(" r ", key_style()),
             Span::raw("rerun  "),
+            Span::styled(" R ", key_style()),
+            Span::raw("risk  "),
             Span::styled(" b ", key_style()),
             Span::raw("backtest  "),
             Span::styled(" e ", key_style()),
@@ -1593,6 +1604,7 @@ impl App {
             Line::from("s / S           cycle sort column / reverse order"),
             Line::from("Enter           open the selected symbol chart"),
             Line::from("r               rerun the current job"),
+            Line::from("R               cycle risk: conservative, balanced, aggressive"),
             Line::from("b / a           run a backtest / scan"),
             Line::from("Esc             cancel scan/backtest; benchmark finishes its phase"),
             Line::from("e               export CSV/JSON to the reports directory"),
@@ -1889,4 +1901,75 @@ fn return_style(value: f64) -> Style {
 
 fn key_style() -> Style {
     Style::default().fg(Color::Black).bg(Color::DarkGray)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::RiskProfile;
+
+    fn app() -> App {
+        let (tx, rx) = mpsc::unbounded_channel();
+        App {
+            cfg: Config::default(),
+            selection: Selection {
+                tickers: vec!["AAPL".to_string()],
+                top: None,
+                horizon: Horizon::Medium,
+                mode: Mode::Analyze,
+                strategy: StrategyMode::Tpi,
+                risk: RiskProfile::Balanced,
+                vol_target_pct: 0.0,
+                risk_pct_override: Some(2.0),
+                capital: 10_000.0,
+                universe: Vec::new(),
+            },
+            start: NaiveDate::from_ymd_opt(2023, 11, 1).expect("date"),
+            end: NaiveDate::from_ymd_opt(2024, 5, 1).expect("date"),
+            offline: true,
+            refresh: false,
+            run_validation: false,
+            export: None,
+            tx,
+            rx,
+            job: None,
+            cancel: Arc::new(AtomicBool::new(false)),
+            // Blocks rerun from spawning a job, so the key can be tested without a runtime.
+            running: true,
+            status: String::new(),
+            progress: None,
+            tick: 0,
+            started: Instant::now(),
+            tab: Tab::Signals,
+            table_state: TableState::default(),
+            sort: SortKey::Action,
+            ascending: true,
+            report: None,
+            backtest: None,
+            benchmark: None,
+            portfolio: None,
+            series_cache: None,
+            horizon_rows: Vec::new(),
+            ought_quit: false,
+        }
+    }
+
+    #[test]
+    fn risk_key_cycles_profile_and_clears_override() {
+        let mut app = app();
+        app.handle_key(KeyEvent::from(KeyCode::Char('R')));
+        assert_eq!(app.selection.risk, RiskProfile::Aggressive);
+        assert_eq!(app.selection.risk_pct_override, None);
+        // rerun was attempted and refused because a job is flagged running
+        assert_eq!(app.status, "a job is already running");
+    }
+
+    #[test]
+    fn risk_key_cycles_three_times_back_to_start() {
+        let mut app = app();
+        for _ in 0..3 {
+            app.handle_key(KeyEvent::from(KeyCode::Char('R')));
+        }
+        assert_eq!(app.selection.risk, RiskProfile::Balanced);
+    }
 }
