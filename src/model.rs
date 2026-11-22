@@ -33,27 +33,27 @@ impl Bar {
     }
 }
 
-impl ta::High for Bar {
+impl fin_primitives::ta_compat::High for Bar {
     fn high(&self) -> f64 {
         self.high
     }
 }
-impl ta::Low for Bar {
+impl fin_primitives::ta_compat::Low for Bar {
     fn low(&self) -> f64 {
         self.low
     }
 }
-impl ta::Close for Bar {
+impl fin_primitives::ta_compat::Close for Bar {
     fn close(&self) -> f64 {
         self.close
     }
 }
-impl ta::Open for Bar {
+impl fin_primitives::ta_compat::Open for Bar {
     fn open(&self) -> f64 {
         self.open
     }
 }
-impl ta::Volume for Bar {
+impl fin_primitives::ta_compat::Volume for Bar {
     fn volume(&self) -> f64 {
         self.volume
     }
