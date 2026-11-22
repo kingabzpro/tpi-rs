@@ -2,15 +2,15 @@
 //!
 //! Every value at index `i` is computed from bars `0..=i` only. The series is
 //! precomputed once per symbol for speed; there is no future-bar access.
-//! `ta` supplies EMA, SMA, MACD and CCI. Wilder-smoothed RSI, ATR, ADX and the
+//! `fin-primitives` supplies EMA, SMA, MACD and CCI. Wilder-smoothed RSI, ATR, ADX and the
 //! remaining oscillators/channels are implemented here to keep their exact
 //! definitions visible and testable.
 
 pub mod ratings;
 
 use crate::model::{Bar, IndicatorSnapshot};
-use ta::Next;
-use ta::indicators::{
+use fin_primitives::ta_compat::Next;
+use fin_primitives::ta_compat::indicators::{
     CommodityChannelIndex, ExponentialMovingAverage, MovingAverageConvergenceDivergence,
     SimpleMovingAverage,
 };
@@ -756,5 +756,16 @@ mod tests {
         );
         assert!(s.ema20[49].unwrap() > values[49] - 6.0);
         assert!(s.ema20[49].unwrap() < values[49]);
+    }
+
+    #[test]
+    fn ema_is_sma_seeded() {
+        let closes: Vec<f64> = (0..30)
+            .map(|i| 100.0 + (i as f64 * 0.7).sin() * 5.0)
+            .collect();
+        let ema = ta_ema(&closes, 20);
+        let sma = closes[..20].iter().sum::<f64>() / 20.0;
+        assert_eq!(ema[18], None);
+        assert!((ema[19].unwrap() - sma).abs() < 1e-9);
     }
 }
